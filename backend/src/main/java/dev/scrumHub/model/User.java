@@ -1,4 +1,4 @@
-package model;
+package dev.scrumHub.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

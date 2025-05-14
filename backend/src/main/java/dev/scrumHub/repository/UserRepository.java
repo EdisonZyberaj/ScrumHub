@@ -1,4 +1,4 @@
-package dev.repository;
+package dev.scrumHub.repository;
 
 import com.yourusername.scrumhub.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
