@@ -1,8 +1,8 @@
 package dev.scrumHub.service;
 
-import dev.scrumHub.dto.AuthResponse;
-import dev.scrumHub.dto.LoginRequest;
-import dev.scrumHub.dto.RegisterRequest;
+import dev.scrumHub.dto.AuthResponseDto;
+import dev.scrumHub.dto.LoginRequestDto;
+import dev.scrumHub.dto.RegisterRequestDto;
 import dev.scrumHub.mapper.UserMapper;
 import dev.scrumHub.model.User;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
 
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponseDto register(RegisterRequestDto request) {
         if (userService.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already in use");
         }
@@ -40,34 +40,39 @@ public class AuthService {
                         .build()
         );
 
-        return AuthResponse.builder()
+        return AuthResponseDto.builder()
                 .token(jwtToken)
                 .user(userMapper.toUserResponse(savedUser))
                 .build();
     }
 
-    public AuthResponse login(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+    public AuthResponseDto login(LoginRequestDto request) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
 
-        var user = userService.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            var user = userService.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-        var jwtToken = jwtService.generateToken(
-                org.springframework.security.core.userdetails.User
-                        .withUsername(user.getEmail())
-                        .password(user.getPassword())
-                        .authorities("ROLE_" + user.getRole().name())
-                        .build()
-        );
+            var jwtToken = jwtService.generateToken(
+                    org.springframework.security.core.userdetails.User
+                            .withUsername(user.getEmail())
+                            .password("")
+                            .authorities("ROLE_" + user.getRole().name())
+                            .build()
+            );
 
-        return AuthResponse.builder()
-                .token(jwtToken)
-                .user(userMapper.toUserResponse(user))
-                .build();
+            return AuthResponseDto.builder()
+                    .token(jwtToken)
+                    .user(userMapper.toUserResponse(user))
+                    .build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Authentication failed: " + e.getMessage());
+        }
     }
 }

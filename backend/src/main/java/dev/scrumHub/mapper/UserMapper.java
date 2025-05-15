@@ -1,22 +1,19 @@
 package dev.scrumHub.mapper;
 
-import dev.scrumHub.dto.UserResponse;
-import dev.scrumHub.dto.RegisterRequest;
+import dev.scrumHub.dto.UserResponseDto;
+import dev.scrumHub.dto.RegisterRequestDto;
 import dev.scrumHub.model.User;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserMapper {
 
-    /**
-     * Maps User entity to UserResponse DTO
-     */
-    public UserResponse toUserResponse(User user) {
+    public UserResponseDto toUserResponse(User user) {
         if (user == null) {
             return null;
         }
 
-        return UserResponse.builder()
+        return UserResponseDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
@@ -25,10 +22,8 @@ public class UserMapper {
                 .build();
     }
 
-    /**
-     * Maps RegisterRequest DTO to User entity
-     */
-    public User toUser(RegisterRequest registerRequest) {
+
+    public User toUser(RegisterRequestDto registerRequest) {
         if (registerRequest == null) {
             return null;
         }
@@ -42,11 +37,8 @@ public class UserMapper {
                 .build();
     }
 
-    /**
-     * Helper method to generate username from name and lastName
-     */
+
     private String generateUsername(String name, String lastName) {
-        // Remove spaces and special characters, convert to lowercase
         String baseName = (name.substring(0, 1) + lastName)
                 .replaceAll("\\s+", "")
                 .replaceAll("[^a-zA-Z0-9]", "")

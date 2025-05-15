@@ -13,43 +13,37 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "users")
+@Table(name = "projects")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class Project {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String username;
-
     @Column(nullable = false, unique = true)
-    private String email;
+    private String name;
+
+    @Column(length = 500)
+    private String description;
 
     @Column(nullable = false)
-    private String password;
+    private String key;
 
-    @Column(nullable = false)
-    private String fullName;
+    @Column
+    private LocalDateTime startDate;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UserRole role;
+    @Column
+    private LocalDateTime endDate;
 
     @Column(nullable = false)
     private boolean active = true;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "user_projects",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "project_id")
-    )
-    private Set<Project> projects = new HashSet<>();
+    @ManyToMany(mappedBy = "projects")
+    private Set<User> users = new HashSet<>();
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -57,8 +51,4 @@ public class User {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-
-    public enum UserRole {
-        GUEST, DEVELOPER, TESTER, SCRUM_MASTER
-    }
 }

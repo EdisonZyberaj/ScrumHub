@@ -90,13 +90,11 @@ function Register() {
 			}
 		} catch (err) {
 			setIsLoading(false);
-
-			if (err.response && err.response.data && err.response.data.message) {
+			if (err.response?.data?.message) {
 				setError(err.response.data.message);
 			} else {
 				setError("Registration failed. Please try again later.");
 			}
-			console.error("Registration error:", err);
 		}
 	};
 

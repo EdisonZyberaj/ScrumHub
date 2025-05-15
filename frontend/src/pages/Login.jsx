@@ -42,29 +42,18 @@ function Login() {
         }
       );
 
-      const { token, user } = response.data;
-
-      if (token) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
-
-        if (user.role === "SCRUM_MASTER") {
-          navigate("/dashboard");
-        } else {
-          navigate("/dashboard");
+      if (response.data?.token) {
+        localStorage.setItem("token", response.data.token);
+        if (response.data.user) {
+          localStorage.setItem("user", JSON.stringify(response.data.user));
         }
+        navigate("/"); 
       } else {
-        setError("Login failed. No token received.");
+        setError("Invalid response from server");
       }
     } catch (err) {
-      console.error(err);
-      if (err.response?.status === 404) {
-        setError("User does not exist. Please check your email.");
-      } else if (err.response?.status === 401) {
-        setError("Incorrect password. Please try again.");
-      } else {
-        setError("An error occurred. Please try again.");
-      }
+      console.error("Login error:", err);
+      setError(err.response?.data?.message || "Login failed. Please check your credentials.");
     }
   };
 
