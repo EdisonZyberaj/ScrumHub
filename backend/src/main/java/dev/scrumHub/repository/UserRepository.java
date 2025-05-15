@@ -1,6 +1,6 @@
 package dev.scrumHub.repository;
 
-import com.yourusername.scrumhub.model.User;
+import dev.scrumHub.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
