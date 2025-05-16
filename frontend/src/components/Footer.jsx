@@ -26,8 +26,9 @@ function Footer() {
 	};
 
 	return (
-		<footer className="bg-darkBlue text-white py-12">
+		<footer className="bg-dark text-white py-12">
 			<div className="container mx-auto px-6 grid md:grid-cols-4 gap-8">
+				{/* Company Info Section */}
 				<div>
 					<div className="flex items-center mb-4">
 						<img src={logo} alt="ScrumHub Logo" className="h-10 mr-3" />
@@ -39,39 +40,47 @@ function Footer() {
 					</p>
 				</div>
 
+				{/* Quick Links Section */}
 				<div>
 					<h4 className="font-semibold mb-4">Quick Links</h4>
 					<ul className="space-y-2">
 						<li>
-							<Link to="/" className="hover:text-mediumBlue">
+							<Link to="/" className="hover:text-primary transition-colors">
 								Home
 							</Link>
 						</li>
 						<li>
 							<button
 								onClick={handleHowItWorksClick}
-								className="hover:text-mediumBlue cursor-pointer bg-transparent border-none text-left p-0 text-white">
+								className="hover:text-primary transition-colors cursor-pointer bg-transparent border-none text-left p-0 text-white">
 								How It Works
 							</button>
 						</li>
 					</ul>
 				</div>
 
+				{/* Legal Section */}
 				<div>
 					<h4 className="font-semibold mb-4">Legal</h4>
 					<ul className="space-y-2">
 						<li>
-							<Link to="/terms" className="hover:text-mediumBlue">
+							<Link
+								to="/terms"
+								className="hover:text-primary transition-colors">
 								Terms of Service
 							</Link>
 						</li>
 						<li>
-							<Link to="/privacy" className="hover:text-mediumBlue">
+							<Link
+								to="/privacy"
+								className="hover:text-primary transition-colors">
 								Privacy Policy
 							</Link>
 						</li>
 					</ul>
 				</div>
+
+				{/* Contact Section */}
 				<div>
 					<h4 className="font-semibold mb-4">Contact Us</h4>
 					<ul className="space-y-2">
@@ -82,26 +91,27 @@ function Footer() {
 							to="//www.linkedin.com"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="text-white hover:text-mediumBlue">
+							className="text-white hover:text-primary transition-colors">
 							<Linkedin className="w-6 h-6" />
 						</Link>
 						<Link
 							to="//www.twitter.com"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="text-white hover:text-mediumBlue">
+							className="text-white hover:text-primary transition-colors">
 							<Twitter className="w-6 h-6" />
 						</Link>
 						<Link
 							to="//www.instagram.com"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="text-white hover:text-mediumBlue">
+							className="text-white hover:text-primary transition-colors">
 							<Instagram className="w-6 h-6" />
 						</Link>
 					</div>
 				</div>
 			</div>
+
 			<div className="border-t border-gray-700 mt-8 pt-6 text-center">
 				<p className="text-sm text-gray-400">
 					© {new Date().getFullYear()} ScrumHub. All Rights Reserved.

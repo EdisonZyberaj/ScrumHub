@@ -48,11 +48,11 @@ function Navbar() {
 	};
 
 	return (
-		<div className="bg-darkBlue text-white p-4 shadow-lg">
+		<div className="bg-dark text-white p-4 shadow-lg">
 			<div className="container mx-auto flex justify-between items-center">
 				<div className="text-xl font-bold">
 					<Link to="/">
-						<img className="h-14 w-14" src={logo} alt="Logo" />
+						<img className="h-14 w-14" src={logo} alt="ScrumHub Logo" />
 					</Link>
 				</div>
 
@@ -60,14 +60,24 @@ function Navbar() {
 					{user &&
 						user.role === "SCRUM_MASTER" &&
 						<div className="flex space-x-6">
-							<Link to="/dashboard">Dashboard</Link>
-							<Link to="/">Home</Link>
+							<Link
+								to="/dashboard"
+								className="hover:text-primary transition-colors">
+								Dashboard
+							</Link>
+							<Link to="/" className="hover:text-primary transition-colors">
+								Home
+							</Link>
 						</div>}
 
 					{user &&
 						user.role === "DEVELOPER" &&
 						<div>
-							<Link to="/tasks">My Tasks</Link>
+							<Link
+								to="/tasks"
+								className="hover:text-primary transition-colors">
+								My Tasks
+							</Link>
 						</div>}
 				</div>
 
@@ -75,7 +85,9 @@ function Navbar() {
 					{user &&
 						<div className="flex items-center space-x-4">
 							<div>
-								<Link to="/profile" className="hover:text-gray-400">
+								<Link
+									to="/profile"
+									className="hover:text-primary transition-colors">
 									<User size={20} />
 								</Link>
 							</div>
@@ -83,7 +95,7 @@ function Navbar() {
 								<div>
 									<Link
 										to="/create-project"
-										className="bg-mediumBlue hover:bg-hoverBlue px-4 py-2 rounded-md flex items-center transition">
+										className="bg-primary hover:bg-accent px-4 py-2 rounded-md flex items-center transition-colors">
 										<PlusCircle size={18} className="mr-1" />
 										<span>New Project</span>
 									</Link>
@@ -91,7 +103,7 @@ function Navbar() {
 							<div>
 								<button
 									onClick={handleLogout}
-									className="bg-white border border-mediumBlue text-mediumBlue hover:bg-lightBlue px-4 py-2 rounded-md transition-colors duration-300">
+									className="bg-white text-dark border border-primary hover:bg-light px-4 py-2 rounded-md transition-colors">
 									Logout
 								</button>
 							</div>
@@ -102,7 +114,7 @@ function Navbar() {
 						<div>
 							<Link
 								to="/login"
-								className="bg-mediumBlue hover:bg-hoverBlue px-4 py-2 rounded-md transition">
+								className="bg-primary hover:bg-accent px-4 py-2 rounded-md transition-colors">
 								Login
 							</Link>
 						</div>}
@@ -120,52 +132,48 @@ function Navbar() {
 					{user &&
 						user.role === "SCRUM_MASTER" &&
 						<div className="flex flex-col items-center space-y-4 w-full">
-							<div>
-								<Link to="/dashboard" className="hover:text-gray-400">
-									Dashboard
-								</Link>
-							</div>
-							<div>
-								<Link to="/" className="hover:text-gray-400">
-									Home
-								</Link>
-							</div>
+							<Link
+								to="/dashboard"
+								className="hover:text-primary transition-colors">
+								Dashboard
+							</Link>
+							<Link to="/" className="hover:text-primary transition-colors">
+								Home
+							</Link>
 						</div>}
 
 					{user &&
 						user.role === "DEVELOPER" &&
 						<div className="w-full text-center">
-							<Link to="/tasks" className="hover:text-gray-400">
+							<Link
+								to="/tasks"
+								className="hover:text-primary transition-colors">
 								My Tasks
 							</Link>
 						</div>}
 
 					{user &&
 						<div className="flex flex-col items-center space-y-4 w-full">
-							<div className="w-full text-center">
-								<Link to="/profile" className="hover:text-gray-400">
-									<User size={20} className="inline-block" />{" "}
-									<span className="ml-1">Profile</span>
-								</Link>
-							</div>
+							<Link
+								to="/profile"
+								className="hover:text-primary transition-colors">
+								<User size={20} className="inline-block" />
+								<span className="ml-1">Profile</span>
+							</Link>
 
 							{user.role === "SCRUM_MASTER" &&
-								<div className="w-full">
-									<Link
-										to="/create-project"
-										className="bg-mediumBlue hover:bg-hoverBlue px-4 py-2 rounded-md w-full text-center transition flex items-center justify-center">
-										<PlusCircle size={18} className="mr-1" />
-										<span>New Project</span>
-									</Link>
-								</div>}
+								<Link
+									to="/create-project"
+									className="bg-primary hover:bg-accent px-4 py-2 rounded-md w-full text-center transition-colors flex items-center justify-center">
+									<PlusCircle size={18} className="mr-1" />
+									<span>New Project</span>
+								</Link>}
 
-							<div className="w-full">
-								<button
-									onClick={handleLogout}
-									className="bg-white border border-mediumBlue text-mediumBlue hover:bg-lightBlue px-4 py-2 rounded-md w-full transition-colors duration-300">
-									Logout
-								</button>
-							</div>
+							<button
+								onClick={handleLogout}
+								className="bg-white text-dark border border-primary hover:bg-light px-4 py-2 rounded-md w-full transition-colors">
+								Logout
+							</button>
 						</div>}
 
 					{!user &&
@@ -173,7 +181,7 @@ function Navbar() {
 						<div className="w-full">
 							<Link
 								to="/login"
-								className="bg-mediumBlue hover:bg-hoverBlue px-4 py-2 rounded-md w-full text-center transition block">
+								className="bg-primary hover:bg-accent px-4 py-2 rounded-md w-full text-center transition-colors block">
 								Login
 							</Link>
 						</div>}
