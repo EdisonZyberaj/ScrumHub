@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import BurndownChart from "../components/BurndownChart";
 
 function Dashboard() {
 	const [user, setUser] = useState(null);
@@ -318,6 +319,22 @@ function Dashboard() {
 								Across {projects.length} projects
 							</span>
 						</div>
+					</div>
+				</div>
+
+				{/* Add Burndown Chart Section here */}
+				<div className="mb-10">
+					<div className="flex justify-between items-center mb-6">
+						<h2 className="text-2xl font-bold text-gray-800">
+							Sprint Progress
+						</h2>
+						<div className="flex items-center text-sm text-gray-500">
+							<Calendar className="h-4 w-4 mr-1" />
+							<span>Current Sprint</span>
+						</div>
+					</div>
+					<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+						<BurndownChart />
 					</div>
 				</div>
 
