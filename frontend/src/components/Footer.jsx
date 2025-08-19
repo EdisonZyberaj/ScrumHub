@@ -28,7 +28,6 @@ function Footer() {
 	return (
 		<footer className="bg-dark text-white py-12">
 			<div className="container mx-auto px-6 grid md:grid-cols-4 gap-8">
-				{/* Company Info Section */}
 				<div>
 					<div className="flex items-center mb-4">
 						<img src={logo} alt="ScrumHub Logo" className="h-10 mr-3" />
@@ -40,7 +39,6 @@ function Footer() {
 					</p>
 				</div>
 
-				{/* Quick Links Section */}
 				<div>
 					<h4 className="font-semibold mb-4">Quick Links</h4>
 					<ul className="space-y-2">
