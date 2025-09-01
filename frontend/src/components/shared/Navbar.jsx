@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Menu, X, PlusCircle, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import logo from "../assets/logo.png";
+import logo from "../../assets/logo.png";
 
 function Navbar() {
 	const [isOpen, setIsOpen] = useState(false);

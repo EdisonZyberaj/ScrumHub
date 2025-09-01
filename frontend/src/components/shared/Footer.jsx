@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Linkedin, Twitter, Instagram } from "lucide-react";
-import logo from "../assets/logo.png";
+import logo from "../../assets/logo.png";
 
 function Footer() {
 	const navigate = useNavigate();

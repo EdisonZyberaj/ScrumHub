@@ -10,9 +10,9 @@ import {
 	Users,
 	BarChart3
 } from "lucide-react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import BurndownChart from "../components/BurndownChart";
+import Navbar from "../components/shared/Navbar";
+import Footer from "../components/shared/Footer";
+import BurndownChart from "../components/common/BurndownChart";
 
 function Dashboard() {
 	const [user, setUser] = useState(null);

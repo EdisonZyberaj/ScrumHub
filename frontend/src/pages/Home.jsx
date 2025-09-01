@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { Twitter, Github, Linkedin } from "lucide-react";
 import { FaCheck, FaUsersCog, FaChartLine, FaTasks } from "react-icons/fa";
 import { BsKanban, BsCalendarCheck } from "react-icons/bs";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import Navbar from "../components/shared/Navbar";
+import Footer from "../components/shared/Footer";
 
 function Home() {
 	return (
@@ -189,7 +189,6 @@ function Home() {
 					</Link>
 				</div>
 			</section>
-			// ose ti bejm replace me footerin e krijuar ne components ose mbajme kete
 			<footer className="bg-gray-800 text-white py-12">
 				<div className="container mx-auto px-6">
 					<div className="flex flex-col md:flex-row justify-between">
