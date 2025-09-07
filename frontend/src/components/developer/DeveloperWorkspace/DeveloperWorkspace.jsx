@@ -1,7 +1,7 @@
 import React from 'react';
 import { Target, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
-import Navbar from '../shared/Navbar';
-import Footer from '../shared/Footer';
+import Navbar from '../../shared/Navbar';
+import Footer from '../../shared/Footer';
 
 const DeveloperWorkspace = ({ user }) => {
   // Mock data for now

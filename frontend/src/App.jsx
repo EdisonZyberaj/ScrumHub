@@ -8,6 +8,10 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import ScrumMasterBoard from "./pages/scrummaster/ScrumMasterBoard";
+import ProjectManager from "./components/scrummaster/ProjectManager";
+import Developer from "./pages/developer/Developer";
+import Tester from "./pages/tester/Tester";
 import NotFound from "./pages/NotFound";
 
 import ProtectedRoute from "./components/shared/ProtectedRoute";
@@ -45,6 +49,44 @@ function App() {
 					element={
 						<ProtectedRoute>
 							<Settings />
+						</ProtectedRoute>
+					}
+				/>
+
+				{/* Scrum Master Routes */}
+				<Route
+					path="/scrummaster"
+					element={
+						<ProtectedRoute>
+							<ProjectManager />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/scrummaster/project/:id"
+					element={
+						<ProtectedRoute>
+							<ScrumMasterBoard />
+						</ProtectedRoute>
+					}
+				/>
+
+				{/* Developer Routes */}
+				<Route
+					path="/developer"
+					element={
+						<ProtectedRoute>
+							<Developer />
+						</ProtectedRoute>
+					}
+				/>
+
+				{/* Tester Routes */}
+				<Route
+					path="/tester"
+					element={
+						<ProtectedRoute>
+							<Tester />
 						</ProtectedRoute>
 					}
 				/>

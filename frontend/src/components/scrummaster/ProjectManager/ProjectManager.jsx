@@ -1,0 +1,336 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+    Plus,
+    Calendar,
+    Users,
+    BarChart3,
+    Settings,
+    Search,
+    Filter,
+    MoreHorizontal,
+    Clock,
+    CheckCircle,
+    AlertCircle
+} from 'lucide-react';
+import CreateProjectModal from './CreateProjectModal';
+import Navbar from '../../shared/Navbar';
+import Footer from '../../shared/Footer';
+
+const ProjectManager = () => {
+    const navigate = useNavigate();
+    const [projects, setProjects] = useState([]);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('all');
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Mock data - will be replaced with API calls
+    useEffect(() => {
+        const mockProjects = [
+            {
+                id: 1,
+                name: "E-commerce Platform",
+                description: "Complete e-commerce solution with payment integration",
+                key: "ECOM",
+                startDate: "2024-01-15T00:00:00",
+                endDate: "2024-06-15T00:00:00",
+                active: true,
+                memberCount: 8,
+                sprintCount: 12,
+                completedTasks: 45,
+                totalTasks: 78,
+                status: 'active',
+                createdAt: "2024-01-10T00:00:00"
+            },
+            {
+                id: 2,
+                name: "Mobile Banking App",
+                description: "Secure mobile banking application with biometric authentication",
+                key: "MBA",
+                startDate: "2024-02-01T00:00:00",
+                endDate: "2024-08-01T00:00:00",
+                active: true,
+                memberCount: 12,
+                sprintCount: 16,
+                completedTasks: 23,
+                totalTasks: 89,
+                status: 'active',
+                createdAt: "2024-01-28T00:00:00"
+            },
+            {
+                id: 3,
+                name: "HR Management System",
+                description: "Internal HR system for employee management and payroll",
+                key: "HRMS",
+                startDate: "2023-10-01T00:00:00",
+                endDate: "2024-03-01T00:00:00",
+                active: false,
+                memberCount: 6,
+                sprintCount: 8,
+                completedTasks: 67,
+                totalTasks: 67,
+                status: 'completed',
+                createdAt: "2023-09-25T00:00:00"
+            }
+        ];
+        
+        setTimeout(() => {
+            setProjects(mockProjects);
+            setIsLoading(false);
+        }, 1000);
+    }, []);
+
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    };
+
+    const getProgressPercentage = (completed, total) => {
+        return total > 0 ? Math.round((completed / total) * 100) : 0;
+    };
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'active':
+                return 'bg-green-100 text-green-800';
+            case 'completed':
+                return 'bg-blue-100 text-blue-800';
+            case 'on-hold':
+                return 'bg-yellow-100 text-yellow-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    const getStatusIcon = (status) => {
+        switch (status) {
+            case 'active':
+                return <Clock className="h-4 w-4" />;
+            case 'completed':
+                return <CheckCircle className="h-4 w-4" />;
+            case 'on-hold':
+                return <AlertCircle className="h-4 w-4" />;
+            default:
+                return <Clock className="h-4 w-4" />;
+        }
+    };
+
+    const handleCreateProject = async (projectData) => {
+        try {
+            // Here you would make an API call to create the project
+            console.log('Creating project:', projectData);
+            
+            // Mock API response - replace with actual API call
+            const newProject = {
+                id: Date.now(),
+                ...projectData,
+                memberCount: 1, // Scrum Master
+                sprintCount: 0,
+                completedTasks: 0,
+                totalTasks: 0,
+                status: 'active',
+                createdAt: new Date().toISOString()
+            };
+            
+            setProjects(prev => [newProject, ...prev]);
+        } catch (error) {
+            throw new Error('Failed to create project');
+        }
+    };
+
+    const filteredProjects = projects.filter(project => {
+        const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            project.key.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        const matchesFilter = filterStatus === 'all' || project.status === filterStatus;
+        
+        return matchesSearch && matchesFilter;
+    });
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex flex-col min-h-screen bg-gray-50">
+            <Navbar />
+            <div className="flex-grow p-6">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-800 mb-2">Project Management</h1>
+                    <p className="text-gray-600">Manage and monitor all your projects</p>
+                </div>
+                <button 
+                    onClick={() => setShowCreateModal(true)}
+                    className="mt-4 md:mt-0 bg-primary text-white px-4 py-2 rounded-lg hover:bg-hoverBlue transition flex items-center"
+                >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Project
+                </button>
+            </div>
+
+            {/* Search and Filter Bar */}
+            <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+                <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex-1 relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                        <input
+                            type="text"
+                            placeholder="Search projects..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                        />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Filter className="h-4 w-4 text-gray-500" />
+                        <select
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                        >
+                            <option value="all">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="completed">Completed</option>
+                            <option value="on-hold">On Hold</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {/* Projects Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredProjects.map((project) => (
+                    <div key={project.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6">
+                        {/* Project Header */}
+                        <div className="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 className="text-xl font-semibold text-gray-800 mb-1">
+                                    {project.name}
+                                </h3>
+                                <span className="text-sm font-mono text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                    {project.key}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${getStatusColor(project.status)}`}>
+                                    {getStatusIcon(project.status)}
+                                    {project.status}
+                                </span>
+                                <button className="text-gray-400 hover:text-gray-600">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Project Description */}
+                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                            {project.description}
+                        </p>
+
+                        {/* Project Stats */}
+                        <div className="space-y-3 mb-4">
+                            <div className="flex items-center justify-between text-sm">
+                                <div className="flex items-center text-gray-600">
+                                    <Users className="h-4 w-4 mr-2" />
+                                    {project.memberCount} members
+                                </div>
+                                <div className="flex items-center text-gray-600">
+                                    <BarChart3 className="h-4 w-4 mr-2" />
+                                    {project.sprintCount} sprints
+                                </div>
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div>
+                                <div className="flex justify-between text-xs text-gray-600 mb-1">
+                                    <span>Progress</span>
+                                    <span>{getProgressPercentage(project.completedTasks, project.totalTasks)}%</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div 
+                                        className="bg-primary h-2 rounded-full transition-all duration-300" 
+                                        style={{ width: `${getProgressPercentage(project.completedTasks, project.totalTasks)}%` }}
+                                    />
+                                </div>
+                                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>{project.completedTasks} completed</span>
+                                    <span>{project.totalTasks} total tasks</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Project Dates */}
+                        <div className="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100">
+                            <div className="flex items-center">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                {formatDate(project.startDate)}
+                            </div>
+                            <div>
+                                Due: {formatDate(project.endDate)}
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 mt-4">
+                            <button 
+                                onClick={() => navigate(`/scrummaster/project/${project.id}`)}
+                                className="flex-1 text-primary hover:bg-primary hover:text-white border border-primary px-3 py-2 rounded-lg text-sm transition"
+                            >
+                                View Details
+                            </button>
+                            <button className="px-3 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 hover:border-gray-400 rounded-lg text-sm transition">
+                                <Settings className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Empty State */}
+            {filteredProjects.length === 0 && (
+                <div className="text-center py-12">
+                    <div className="text-gray-400 mb-4">
+                        <BarChart3 className="h-12 w-12 mx-auto" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No projects found</h3>
+                    <p className="text-gray-500 mb-4">
+                        {searchTerm || filterStatus !== 'all' 
+                            ? 'Try adjusting your search or filter criteria'
+                            : 'Get started by creating your first project'
+                        }
+                    </p>
+                    {!searchTerm && filterStatus === 'all' && (
+                        <button 
+                            onClick={() => setShowCreateModal(true)}
+                            className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-hoverBlue transition"
+                        >
+                            Create Your First Project
+                        </button>
+                    )}
+                </div>
+            )}
+
+            {/* Create Project Modal */}
+            <CreateProjectModal
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                onSubmit={handleCreateProject}
+            />
+            </div>
+            <Footer />
+        </div>
+    );
+};
+
+export default ProjectManager;

@@ -72,8 +72,15 @@ function Register() {
 		setIsLoading(true);
 
 		try {
+			console.log("Attempting registration with data:", {
+				name: formData.name,
+				lastName: formData.lastName,
+				email: formData.email,
+				role: formData.role
+			});
+
 			const response = await axios.post(
-				"http://localhost:8080/api/auth/register",
+				"/api/auth/register",
 				{
 					name: formData.name,
 					lastName: formData.lastName,
@@ -83,17 +90,21 @@ function Register() {
 				}
 			);
 
+			console.log("Registration response:", response);
 			setIsLoading(false);
 
 			if (response.status === 201) {
+				console.log("Registration successful, navigating to login");
 				navigate("/login");
 			}
 		} catch (err) {
+			console.error("Registration error:", err);
+			console.error("Error response:", err.response);
 			setIsLoading(false);
 			if (err.response?.data?.message) {
 				setError(err.response.data.message);
 			} else {
-				setError("Registration failed. Please try again later.");
+				setError(`Registration failed: ${err.message || 'Please try again later.'}`);
 			}
 		}
 	};

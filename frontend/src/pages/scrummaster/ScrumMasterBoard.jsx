@@ -26,8 +26,8 @@ import {
 	User,
 	Tag
 } from "lucide-react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import Navbar from "../../components/shared/Navbar";
+import Footer from "../../components/shared/Footer";
 const getPriorityColor = priority => {
     switch (priority.toLowerCase()) {
         case "critical":
@@ -210,7 +210,7 @@ const Column = ({ column, tasks }) => {
 	);
 };
 
-function SprintBoard() {
+function ScrumMasterBoard() {
 	const [columns, setColumns] = useState({});
 	const [activeSprint, setActiveSprint] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
@@ -586,4 +586,4 @@ function SprintBoard() {
 	);
 }
 
-export default SprintBoard;
+export default ScrumMasterBoard;

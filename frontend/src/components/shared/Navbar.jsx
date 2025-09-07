@@ -21,7 +21,7 @@ function Navbar() {
 				}
 
 				const response = await axios.get(
-					"http://localhost:8080/api/user/profile",
+					"/api/user/profile",
 					{
 						headers: {
 							Authorization: `Bearer ${token}`
@@ -61,6 +61,11 @@ function Navbar() {
 						user.role === "SCRUM_MASTER" &&
 						<div className="flex space-x-6">
 							<Link
+								to="/scrummaster"
+								className="hover:text-primary transition-colors">
+								Projects
+							</Link>
+							<Link
 								to="/dashboard"
 								className="hover:text-primary transition-colors">
 								Dashboard
@@ -72,11 +77,27 @@ function Navbar() {
 
 					{user &&
 						user.role === "DEVELOPER" &&
-						<div>
+						<div className="flex space-x-6">
 							<Link
-								to="/tasks"
+								to="/developer"
 								className="hover:text-primary transition-colors">
-								My Tasks
+								My Workspace
+							</Link>
+							<Link to="/" className="hover:text-primary transition-colors">
+								Home
+							</Link>
+						</div>}
+
+					{user &&
+						user.role === "TESTER" &&
+						<div className="flex space-x-6">
+							<Link
+								to="/tester"
+								className="hover:text-primary transition-colors">
+								Test Console
+							</Link>
+							<Link to="/" className="hover:text-primary transition-colors">
+								Home
 							</Link>
 						</div>}
 				</div>
@@ -133,6 +154,11 @@ function Navbar() {
 						user.role === "SCRUM_MASTER" &&
 						<div className="flex flex-col items-center space-y-4 w-full">
 							<Link
+								to="/scrummaster"
+								className="hover:text-primary transition-colors">
+								Projects
+							</Link>
+							<Link
 								to="/dashboard"
 								className="hover:text-primary transition-colors">
 								Dashboard
@@ -144,11 +170,27 @@ function Navbar() {
 
 					{user &&
 						user.role === "DEVELOPER" &&
-						<div className="w-full text-center">
+						<div className="flex flex-col items-center space-y-4 w-full">
 							<Link
-								to="/tasks"
+								to="/developer"
 								className="hover:text-primary transition-colors">
-								My Tasks
+								My Workspace
+							</Link>
+							<Link to="/" className="hover:text-primary transition-colors">
+								Home
+							</Link>
+						</div>}
+
+					{user &&
+						user.role === "TESTER" &&
+						<div className="flex flex-col items-center space-y-4 w-full">
+							<Link
+								to="/tester"
+								className="hover:text-primary transition-colors">
+								Test Console
+							</Link>
+							<Link to="/" className="hover:text-primary transition-colors">
+								Home
 							</Link>
 						</div>}
 
