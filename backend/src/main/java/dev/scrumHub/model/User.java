@@ -43,6 +43,39 @@ public class User {
     @Column(nullable = false)
     private boolean active = true;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<UserProject> projectMemberships = new HashSet<>();
+
+    @OneToMany(mappedBy = "assignee")
+    private Set<Task> assignedTasks = new HashSet<>();
+
+    @OneToMany(mappedBy = "createdBy")
+    private Set<Task> createdTasks = new HashSet<>();
+
+    @OneToMany(mappedBy = "developer")
+    private Set<DeveloperBoard> developerBoardItems = new HashSet<>();
+
+    @OneToMany(mappedBy = "tester")
+    private Set<TesterBoard> testerBoardItems = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TaskComment> comments = new HashSet<>();
+
+    @OneToMany(mappedBy = "createdBy")
+    private Set<TestCase> createdTestCases = new HashSet<>();
+
+    @OneToMany(mappedBy = "reportedBy")
+    private Set<BugReport> reportedBugs = new HashSet<>();
+
+    @OneToMany(mappedBy = "assignedTo")
+    private Set<BugReport> assignedBugs = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TimeLog> timeLogs = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Notification> notifications = new HashSet<>();
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_projects",

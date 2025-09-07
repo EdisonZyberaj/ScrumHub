@@ -13,25 +13,21 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "projects")
+@Table(name = "sprints")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Project {
-
+public class Sprint {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
 
-    @Column(length = 500)
-    private String description;
-
     @Column(nullable = false)
-    private String key;
+    private String goal;
 
     @Column
     private LocalDateTime startDate;
@@ -39,20 +35,16 @@ public class Project {
     @Column
     private LocalDateTime endDate;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<UserProject> projectMemberships = new HashSet<>();
-
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Sprint> sprints = new HashSet<>();
-
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Task> tasks = new HashSet<>();
-
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private boolean active = true;
+    private SprintStatus status = SprintStatus.PLANNED;
 
-    @ManyToMany(mappedBy = "projects")
-    private Set<User> users = new HashSet<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id", nullable = false)
+    private Project project;
+
+    @OneToMany(mappedBy = "sprint", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Task> tasks = new HashSet<>();
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -60,4 +52,8 @@ public class Project {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    public enum SprintStatus {
+        PLANNED, ACTIVE, COMPLETED
+    }
 }
