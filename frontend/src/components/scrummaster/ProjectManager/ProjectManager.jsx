@@ -25,60 +25,40 @@ const ProjectManager = () => {
     const [filterStatus, setFilterStatus] = useState('all');
     const [isLoading, setIsLoading] = useState(true);
 
-    // Mock data - will be replaced with API calls
+    // Fetch real data from backend API
     useEffect(() => {
-        const mockProjects = [
-            {
-                id: 1,
-                name: "E-commerce Platform",
-                description: "Complete e-commerce solution with payment integration",
-                key: "ECOM",
-                startDate: "2024-01-15T00:00:00",
-                endDate: "2024-06-15T00:00:00",
-                active: true,
-                memberCount: 8,
-                sprintCount: 12,
-                completedTasks: 45,
-                totalTasks: 78,
-                status: 'active',
-                createdAt: "2024-01-10T00:00:00"
-            },
-            {
-                id: 2,
-                name: "Mobile Banking App",
-                description: "Secure mobile banking application with biometric authentication",
-                key: "MBA",
-                startDate: "2024-02-01T00:00:00",
-                endDate: "2024-08-01T00:00:00",
-                active: true,
-                memberCount: 12,
-                sprintCount: 16,
-                completedTasks: 23,
-                totalTasks: 89,
-                status: 'active',
-                createdAt: "2024-01-28T00:00:00"
-            },
-            {
-                id: 3,
-                name: "HR Management System",
-                description: "Internal HR system for employee management and payroll",
-                key: "HRMS",
-                startDate: "2023-10-01T00:00:00",
-                endDate: "2024-03-01T00:00:00",
-                active: false,
-                memberCount: 6,
-                sprintCount: 8,
-                completedTasks: 67,
-                totalTasks: 67,
-                status: 'completed',
-                createdAt: "2023-09-25T00:00:00"
+        const fetchProjects = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('No authentication token found');
+                    setProjects([]);
+                    setIsLoading(false);
+                    return;
+                }
+
+                const response = await fetch('/api/projects', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch projects: ${response.status}`);
+                }
+                const projectsData = await response.json();
+                setProjects(projectsData);
+            } catch (error) {
+                console.error('Error fetching projects:', error);
+                // Fallback to empty array on error
+                setProjects([]);
+            } finally {
+                setIsLoading(false);
             }
-        ];
-        
-        setTimeout(() => {
-            setProjects(mockProjects);
-            setIsLoading(false);
-        }, 1000);
+        };
+
+        fetchProjects();
     }, []);
 
     const formatDate = (dateString) => {
@@ -121,24 +101,26 @@ const ProjectManager = () => {
 
     const handleCreateProject = async (projectData) => {
         try {
-            // Here you would make an API call to create the project
-            console.log('Creating project:', projectData);
-            
-            // Mock API response - replace with actual API call
-            const newProject = {
-                id: Date.now(),
-                ...projectData,
-                memberCount: 1, // Scrum Master
-                sprintCount: 0,
-                completedTasks: 0,
-                totalTasks: 0,
-                status: 'active',
-                createdAt: new Date().toISOString()
-            };
-            
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/projects', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
+                body: JSON.stringify(projectData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to create project');
+            }
+
+            const newProject = await response.json();
             setProjects(prev => [newProject, ...prev]);
         } catch (error) {
-            throw new Error('Failed to create project');
+            console.error('Error creating project:', error);
+            throw error;
         }
     };
 

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/dell/Projects/WebProjects/scrumhub/frontend/src/components/shared/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

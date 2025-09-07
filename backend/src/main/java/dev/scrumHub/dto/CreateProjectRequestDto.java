@@ -12,8 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProjectDto {
-    private Long id;
+public class CreateProjectRequestDto {
     
     @NotBlank(message = "Project name is required")
     @Size(min = 3, max = 100, message = "Project name must be between 3 and 100 characters")
@@ -30,7 +29,4 @@ public class ProjectDto {
     
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private boolean active;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }

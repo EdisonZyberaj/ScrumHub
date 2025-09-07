@@ -29,9 +29,9 @@ public class UserMapper {
         }
 
         return User.builder()
-                .username(generateUsername(registerRequest.getName(), registerRequest.getLastName()))
+                .username(generateUsername(registerRequest.getFirstName(), registerRequest.getLastName()))
                 .email(registerRequest.getEmail())
-                .fullName(registerRequest.getName() + " " + registerRequest.getLastName())
+                .fullName(registerRequest.getFirstName() + " " + registerRequest.getLastName())
                 .role(registerRequest.getRole())
                 .active(true)
                 .build();

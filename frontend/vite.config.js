@@ -17,6 +17,9 @@ export default defineConfig({
 				changeOrigin: true,
 				secure: false,
 			}
+		},
+		headers: {
+			'Content-Security-Policy': "script-src 'self' 'unsafe-eval' 'unsafe-inline';"
 		}
 	}
 });
