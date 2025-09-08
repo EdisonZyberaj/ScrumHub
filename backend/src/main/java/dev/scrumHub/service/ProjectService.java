@@ -6,6 +6,7 @@ import dev.scrumHub.dto.ProjectResponseDto;
 import dev.scrumHub.model.Project;
 import dev.scrumHub.model.Sprint;
 import dev.scrumHub.model.Task;
+import dev.scrumHub.model.Task.TaskStatus;
 import dev.scrumHub.repository.ProjectRepository;
 import dev.scrumHub.repository.SprintRepository;
 import dev.scrumHub.repository.TaskRepository;
@@ -127,6 +128,28 @@ public class ProjectService {
     }
 
     @Transactional
+    public ProjectResponseDto updateProjectStatus(Long id, String status) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Project not found with id: " + id));
+        
+        // Update project active status based on the status
+        switch (status.toLowerCase()) {
+            case "active":
+                project.setActive(true);
+                break;
+            case "completed":
+            case "on-hold":
+                project.setActive(false);
+                break;
+            default:
+                throw new RuntimeException("Invalid status: " + status);
+        }
+        
+        Project updatedProject = projectRepository.save(project);
+        return convertToResponseDto(updatedProject);
+    }
+
+    @Transactional
     public void deleteProject(Long id) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found with id: " + id));
@@ -181,9 +204,7 @@ public class ProjectService {
         // Calculate stats
         List<Sprint> sprints = sprintRepository.findByProjectId(project.getId());
         long totalTasks = taskRepository.countByProjectId(project.getId());
-        
-        // For now, we'll estimate completed tasks as 0 - this would need proper task status tracking
-        long completedTasks = 0;
+        long completedTasks = taskRepository.countByProjectIdAndStatus(project.getId(), TaskStatus.DONE);
         
         // Determine project status based on dates and activity
         String status = determineProjectStatus(project);

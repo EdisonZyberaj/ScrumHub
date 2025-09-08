@@ -40,6 +40,10 @@ public class Task {
     @Column(nullable = false)
     private TaskPriority priority = TaskPriority.MEDIUM;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TaskStatus status = TaskStatus.TO_DO;
+
     @Column
     private Integer estimatedHours;
 
@@ -96,5 +100,9 @@ public class Task {
 
     public enum TaskPriority {
         LOW, MEDIUM, HIGH, CRITICAL
+    }
+
+    public enum TaskStatus {
+        TO_DO, IN_PROGRESS, READY_FOR_TESTING, IN_TESTING, BUG_FOUND, TEST_PASSED, DONE
     }
 }

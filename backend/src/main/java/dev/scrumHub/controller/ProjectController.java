@@ -69,6 +69,25 @@ public class ProjectController {
         }
     }
 
+    @PutMapping("/{id}/status")
+    @PreAuthorize("hasRole('SCRUM_MASTER')")
+    public ResponseEntity<?> updateProjectStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> statusRequest) {
+        try {
+            String status = statusRequest.get("status");
+            if (status == null || status.trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("message", "Status is required"));
+            }
+            ProjectResponseDto updatedProject = projectService.updateProjectStatus(id, status);
+            return ResponseEntity.ok(updatedProject);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('SCRUM_MASTER')")
     public ResponseEntity<?> deleteProject(@PathVariable Long id) {
