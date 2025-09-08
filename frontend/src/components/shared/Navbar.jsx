@@ -66,12 +66,19 @@ function Navbar() {
 								Projects
 							</Link>
 							<Link
+								to="/scrummaster/sprint-planning"
+								className="hover:text-primary transition-colors">
+								Sprint Planning
+							</Link>
+							<Link
+								to="/scrummaster/task-assignment"
+								className="hover:text-primary transition-colors">
+								Task Assignment
+							</Link>
+							<Link
 								to="/dashboard"
 								className="hover:text-primary transition-colors">
 								Dashboard
-							</Link>
-							<Link to="/" className="hover:text-primary transition-colors">
-								Home
 							</Link>
 						</div>}
 
@@ -159,12 +166,19 @@ function Navbar() {
 								Projects
 							</Link>
 							<Link
+								to="/scrummaster/sprint-planning"
+								className="hover:text-primary transition-colors">
+								Sprint Planning
+							</Link>
+							<Link
+								to="/scrummaster/task-assignment"
+								className="hover:text-primary transition-colors">
+								Task Assignment
+							</Link>
+							<Link
 								to="/dashboard"
 								className="hover:text-primary transition-colors">
 								Dashboard
-							</Link>
-							<Link to="/" className="hover:text-primary transition-colors">
-								Home
 							</Link>
 						</div>}
 

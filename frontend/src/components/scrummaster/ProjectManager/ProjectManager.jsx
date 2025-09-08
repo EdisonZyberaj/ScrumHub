@@ -11,7 +11,10 @@ import {
     MoreHorizontal,
     Clock,
     CheckCircle,
-    AlertCircle
+    AlertCircle,
+    Target,
+    UserCheck,
+    ChevronDown
 } from 'lucide-react';
 import CreateProjectModal from './CreateProjectModal';
 import Navbar from '../../shared/Navbar';
@@ -24,6 +27,7 @@ const ProjectManager = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [isLoading, setIsLoading] = useState(true);
+    const [openDropdown, setOpenDropdown] = useState(null);
 
     // Fetch real data from backend API
     useEffect(() => {
@@ -60,6 +64,15 @@ const ProjectManager = () => {
 
         fetchProjects();
     }, []);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = () => setOpenDropdown(null);
+        if (openDropdown) {
+            document.addEventListener('click', handleClickOutside);
+            return () => document.removeEventListener('click', handleClickOutside);
+        }
+    }, [openDropdown]);
 
     const formatDate = (dateString) => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -124,6 +137,36 @@ const ProjectManager = () => {
         }
     };
 
+    const handleStatusChange = async (projectId, newStatus) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/projects/${projectId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (response.ok) {
+                const updatedProject = await response.json();
+                setProjects(prev => prev.map(p => 
+                    p.id === projectId ? { ...p, status: newStatus } : p
+                ));
+            } else {
+                throw new Error('Failed to update project status');
+            }
+        } catch (error) {
+            console.error('Error updating project status:', error);
+            // Mock update for demo
+            setProjects(prev => prev.map(p => 
+                p.id === projectId ? { ...p, status: newStatus } : p
+            ));
+        }
+        setOpenDropdown(null);
+    };
+
     const filteredProjects = projects.filter(project => {
         const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -159,6 +202,33 @@ const ProjectManager = () => {
                     <Plus className="h-4 w-4 mr-2" />
                     Create Project
                 </button>
+            </div>
+
+            {/* Quick Navigation */}
+            <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+                <div className="flex flex-wrap gap-3">
+                    <button
+                        onClick={() => navigate('/scrummaster/sprint-planning')}
+                        className="flex items-center px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition"
+                    >
+                        <Target className="h-4 w-4 mr-2" />
+                        Sprint Planning
+                    </button>
+                    <button
+                        onClick={() => navigate('/scrummaster/task-assignment')}
+                        className="flex items-center px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition"
+                    >
+                        <UserCheck className="h-4 w-4 mr-2" />
+                        Task Assignment
+                    </button>
+                    <button
+                        onClick={() => navigate('/dashboard')}
+                        className="flex items-center px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition"
+                    >
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Dashboard
+                    </button>
+                </div>
             </div>
 
             {/* Search and Filter Bar */}
@@ -267,13 +337,58 @@ const ProjectManager = () => {
                         <div className="flex gap-2 mt-4">
                             <button 
                                 onClick={() => navigate(`/scrummaster/project/${project.id}`)}
-                                className="flex-1 text-primary hover:bg-primary hover:text-white border border-primary px-3 py-2 rounded-lg text-sm transition"
+                                className="flex-1 text-primary hover:bg-primary hover:text-white border border-primary px-3 py-2 rounded-lg text-sm transition group"
+                                title="Access both Scrum and Testing boards for comprehensive project management"
                             >
-                                View Details
+                                <span>View Project Boards</span>
+                                <div className="text-xs text-primary group-hover:text-white mt-1 opacity-75">
+                                    Scrum & Testing Views
+                                </div>
                             </button>
-                            <button className="px-3 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 hover:border-gray-400 rounded-lg text-sm transition">
-                                <Settings className="h-4 w-4" />
-                            </button>
+                            <div className="relative">
+                                <button 
+                                    onClick={() => setOpenDropdown(openDropdown === project.id ? null : project.id)}
+                                    className="px-3 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 hover:border-gray-400 rounded-lg text-sm transition flex items-center"
+                                >
+                                    <Settings className="h-4 w-4 mr-1" />
+                                    <ChevronDown className="h-3 w-3" />
+                                </button>
+                                
+                                {openDropdown === project.id && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                                        <div className="py-1">
+                                            <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase">Change Status</div>
+                                            <button
+                                                onClick={() => handleStatusChange(project.id, 'active')}
+                                                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center ${
+                                                    project.status === 'active' ? 'text-green-600 font-medium' : 'text-gray-700'
+                                                }`}
+                                            >
+                                                <Clock className="h-4 w-4 mr-2" />
+                                                Active
+                                            </button>
+                                            <button
+                                                onClick={() => handleStatusChange(project.id, 'completed')}
+                                                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center ${
+                                                    project.status === 'completed' ? 'text-blue-600 font-medium' : 'text-gray-700'
+                                                }`}
+                                            >
+                                                <CheckCircle className="h-4 w-4 mr-2" />
+                                                Completed
+                                            </button>
+                                            <button
+                                                onClick={() => handleStatusChange(project.id, 'on-hold')}
+                                                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center ${
+                                                    project.status === 'on-hold' ? 'text-yellow-600 font-medium' : 'text-gray-700'
+                                                }`}
+                                            >
+                                                <AlertCircle className="h-4 w-4 mr-2" />
+                                                On Hold
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 ))}

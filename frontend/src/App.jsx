@@ -10,6 +10,8 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import ScrumMasterBoard from "./pages/scrummaster/ScrumMasterBoard";
 import ProjectManager from "./components/scrummaster/ProjectManager";
+import SprintPlanning from "./components/scrummaster/SprintPlanning";
+import TaskAssignment from "./components/scrummaster/TaskAssignment";
 import Developer from "./pages/developer/Developer";
 import Tester from "./pages/tester/Tester";
 import NotFound from "./pages/NotFound";
@@ -59,6 +61,30 @@ function App() {
 					element={
 						<ProtectedRoute>
 							<ProjectManager />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/scrummaster/projects"
+					element={
+						<ProtectedRoute>
+							<ProjectManager />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/scrummaster/sprint-planning"
+					element={
+						<ProtectedRoute>
+							<SprintPlanning />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/scrummaster/task-assignment"
+					element={
+						<ProtectedRoute>
+							<TaskAssignment />
 						</ProtectedRoute>
 					}
 				/>
