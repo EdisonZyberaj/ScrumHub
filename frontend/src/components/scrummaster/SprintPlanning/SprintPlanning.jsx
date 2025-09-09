@@ -39,7 +39,7 @@ const SprintPlanning = () => {
             const token = localStorage.getItem('token');
             
             // Fetch projects first
-            const projectsResponse = await fetch('/api/projects', {
+            const projectsResponse = await fetch('http://localhost:8080/api/projects', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             
@@ -77,37 +77,25 @@ const SprintPlanning = () => {
 
             // Fetch sprints for selected project
             if (selectedProject) {
-                // Mock data based on existing backend entities
-                const mockSprints = [
-                    {
-                        id: 1,
-                        name: 'Sprint 15',
-                        goal: 'Complete payment integration and user profile features',
-                        startDate: '2025-05-05',
-                        endDate: '2025-05-19',
-                        active: true,
-                        projectId: selectedProject,
-                        // Derived data
-                        totalTasks: 12,
-                        completedTasks: 5,
-                        progress: 42
-                    },
-                    {
-                        id: 2,
-                        name: 'Sprint 14',
-                        goal: 'Implement notification system and performance optimization',
-                        startDate: '2025-04-21',
-                        endDate: '2025-05-04',
-                        active: false,
-                        projectId: selectedProject,
-                        // Derived data
-                        totalTasks: 15,
-                        completedTasks: 15,
-                        progress: 100
+                try {
+                    const sprintsResponse = await fetch(`http://localhost:8080/api/sprints?projectId=${selectedProject}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (sprintsResponse.ok) {
+                        const sprintsData = await sprintsResponse.json();
+                        setSprints(sprintsData);
+                        setActiveSprint(sprintsData.find(s => s.status === 'ACTIVE'));
+                    } else {
+                        console.error('Failed to fetch sprints:', sprintsResponse.status);
+                        setSprints([]);
+                        setActiveSprint(null);
                     }
-                ];
-                setSprints(mockSprints);
-                setActiveSprint(mockSprints.find(s => s.active));
+                } catch (sprintError) {
+                    console.error('Error fetching sprints:', sprintError);
+                    setSprints([]);
+                    setActiveSprint(null);
+                }
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -410,17 +398,17 @@ const SprintPlanning = () => {
                             </div>
                             <div className="flex items-center gap-3">
                                 <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${
-                                    sprint.active 
+                                    sprint.status === 'ACTIVE'
                                         ? 'bg-green-100 text-green-800' 
-                                        : sprint.progress === 100 
+                                        : sprint.status === 'COMPLETED'
                                             ? 'bg-blue-100 text-blue-800'
                                             : 'bg-gray-100 text-gray-800'
                                 }`}>
-                                    {sprint.active ? <Play className="h-4 w-4" /> : 
-                                     sprint.progress === 100 ? <CheckCircle className="h-4 w-4" /> :
+                                    {sprint.status === 'ACTIVE' ? <Play className="h-4 w-4" /> : 
+                                     sprint.status === 'COMPLETED' ? <CheckCircle className="h-4 w-4" /> :
                                      <Clock className="h-4 w-4" />}
-                                    {sprint.active ? 'Active' : 
-                                     sprint.progress === 100 ? 'Completed' : 'Planning'}
+                                    {sprint.status === 'ACTIVE' ? 'Active' : 
+                                     sprint.status === 'COMPLETED' ? 'Completed' : 'Planned'}
                                 </span>
                                 <button className="text-gray-400 hover:text-gray-600">
                                     <Edit className="h-4 w-4" />
@@ -443,9 +431,9 @@ const SprintPlanning = () => {
                             </div>
                             <div className="flex items-center text-sm text-gray-600">
                                 <Clock className="h-4 w-4 mr-2" />
-                                {sprint.active 
+                                {sprint.status === 'ACTIVE'
                                     ? `${getDaysRemaining(sprint.endDate)} days left`
-                                    : sprint.progress === 100 
+                                    : sprint.status === 'COMPLETED'
                                         ? 'Completed'
                                         : 'Not started'
                                 }
@@ -467,7 +455,7 @@ const SprintPlanning = () => {
                             </div>
 
                             <div className="flex gap-2">
-                                {!sprint.active && sprint.progress !== 100 && (
+                                {sprint.status === 'PLANNED' && (
                                     <button 
                                         onClick={(e) => {
                                             e.stopPropagation();

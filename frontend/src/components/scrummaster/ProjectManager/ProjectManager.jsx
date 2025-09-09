@@ -41,7 +41,7 @@ const ProjectManager = () => {
                     return;
                 }
 
-                const response = await fetch('/api/projects', {
+                const response = await fetch('http://localhost:8080/api/projects', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -94,6 +94,8 @@ const ProjectManager = () => {
                 return 'bg-blue-100 text-blue-800';
             case 'on-hold':
                 return 'bg-yellow-100 text-yellow-800';
+            case 'planned':
+                return 'bg-purple-100 text-purple-800';
             default:
                 return 'bg-gray-100 text-gray-800';
         }
@@ -107,6 +109,8 @@ const ProjectManager = () => {
                 return <CheckCircle className="h-4 w-4" />;
             case 'on-hold':
                 return <AlertCircle className="h-4 w-4" />;
+            case 'planned':
+                return <Target className="h-4 w-4" />;
             default:
                 return <Clock className="h-4 w-4" />;
         }
@@ -115,7 +119,7 @@ const ProjectManager = () => {
     const handleCreateProject = async (projectData) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('/api/projects', {
+            const response = await fetch('http://localhost:8080/api/projects', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -140,7 +144,7 @@ const ProjectManager = () => {
     const handleStatusChange = async (projectId, newStatus) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`/api/projects/${projectId}`, {
+            const response = await fetch(`http://localhost:8080/api/projects/${projectId}/status`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -255,6 +259,7 @@ const ProjectManager = () => {
                             <option value="active">Active</option>
                             <option value="completed">Completed</option>
                             <option value="on-hold">On Hold</option>
+                            <option value="planned">Planned</option>
                         </select>
                     </div>
                 </div>
@@ -384,6 +389,15 @@ const ProjectManager = () => {
                                             >
                                                 <AlertCircle className="h-4 w-4 mr-2" />
                                                 On Hold
+                                            </button>
+                                            <button
+                                                onClick={() => handleStatusChange(project.id, 'planned')}
+                                                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center ${
+                                                    project.status === 'planned' ? 'text-purple-600 font-medium' : 'text-gray-700'
+                                                }`}
+                                            >
+                                                <Target className="h-4 w-4 mr-2" />
+                                                Planned
                                             </button>
                                         </div>
                                     </div>

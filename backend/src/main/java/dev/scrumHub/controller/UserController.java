@@ -16,9 +16,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})
 public class UserController {
 
     private final UserService userService;
@@ -34,38 +34,29 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping
-    public ResponseEntity<List<UserResponseDto>> getUsers(
-            @RequestParam(required = false) String role,
-            @RequestParam(required = false) Long projectId) {
-        
-        List<User> users;
-        
-        if (projectId != null) {
-            users = userService.findByProjectId(projectId);
-        } else if (role != null) {
-            // Handle multiple roles separated by comma (e.g., "DEVELOPER,TESTER")
-            String[] roles = role.split(",");
-            List<UserRole> userRoles = Arrays.stream(roles)
-                    .map(r -> UserRole.valueOf(r.trim().toUpperCase()))
-                    .collect(Collectors.toList());
-            users = userService.findByRoles(userRoles);
-        } else {
-            users = userService.findAllActiveUsers();
-        }
-        
-        List<UserResponseDto> userDtos = users.stream()
-                .map(userMapper::toUserResponse)
-                .collect(Collectors.toList());
-        
-        return ResponseEntity.ok(userDtos);
-    }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id) {
-        return userService.findById(id)
-                .map(userMapper::toUserResponse)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @PutMapping("/profile")
+    public ResponseEntity<UserResponseDto> updateProfile(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody UserResponseDto updateRequest) {
+        try {
+            User currentUser = userService.findByEmail(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Update user fields
+            if (updateRequest.getFullName() != null) {
+                currentUser.setFullName(updateRequest.getFullName());
+            }
+            if (updateRequest.getUsername() != null) {
+                currentUser.setUsername(updateRequest.getUsername());
+            }
+
+            User updatedUser = userService.save(currentUser);
+            UserResponseDto response = userMapper.toUserResponse(updatedUser);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

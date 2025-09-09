@@ -3,7 +3,9 @@
     "allow": [
       "Read(//c/Users/dell/Projects/WebProjects/scrumhub/frontend/src/components/shared/**)",
       "Read(//c/Users/dell/Projects/WebProjects/scrumhub/frontend/**)",
-      "Read(//c/Users/dell/Projects/WebProjects/scrumhub/frontend/src/**)"
+      "Read(//c/Users/dell/Projects/WebProjects/scrumhub/frontend/src/**)",
+      "Bash(curl:*)",
+      "Bash(psql:*)"
     ],
     "deny": [],
     "ask": []
