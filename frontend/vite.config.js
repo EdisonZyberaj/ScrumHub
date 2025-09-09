@@ -19,7 +19,7 @@ export default defineConfig({
 			}
 		},
 		headers: {
-			'Content-Security-Policy': "script-src 'self' 'unsafe-eval' 'unsafe-inline';"
+			'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' http://localhost:8080;"
 		}
 	}
 });

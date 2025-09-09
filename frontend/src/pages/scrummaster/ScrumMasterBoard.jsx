@@ -16,7 +16,6 @@ import {
 } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import axios from "axios";
 import {
 	Plus,
 	MoreHorizontal,
@@ -595,7 +594,9 @@ function ScrumMasterBoard() {
 		if (activeTask === overTask) return;
 
 		setColumns((prevColumns) => {
-			const currentBoard = prevColumns.current;
+			const currentBoard = prevColumns[boardType];
+			if (!currentBoard || !currentBoard.columns) return prevColumns;
+			
 			const oldColumnId = Object.keys(currentBoard.columns).find(columnId =>
 				currentBoard.columns[columnId].taskIds.includes(activeTask)
 			);
@@ -624,7 +625,6 @@ function ScrumMasterBoard() {
 
 				return {
 					...prevColumns,
-					current: updatedBoard,
 					[boardType]: updatedBoard
 				};
 			}
@@ -655,7 +655,6 @@ function ScrumMasterBoard() {
 
 			return {
 				...prevColumns,
-				current: updatedBoard,
 				[boardType]: updatedBoard
 			};
 		});
@@ -699,7 +698,7 @@ function ScrumMasterBoard() {
 
 	const getTaskStatus = (task) => {
 		// Use current board data
-		const currentBoard = columns.current || columns.scrum;
+		const currentBoard = columns[boardType] || columns.scrum;
 		
 		// Find which column this task belongs to
 		for (const columnId of currentBoard.columnOrder || []) {
@@ -738,7 +737,7 @@ function ScrumMasterBoard() {
 			
 			// Update local state
 			setColumns(prevColumns => {
-				const updatedTasks = { ...prevColumns.tasks };
+				const updatedTasks = { ...prevColumns[boardType].tasks };
 				if (updatedTasks[taskId]) {
 					const assignedUser = teamMembers.find(member => member.id === parseInt(newAssigneeId));
 					updatedTasks[taskId] = {
@@ -748,7 +747,10 @@ function ScrumMasterBoard() {
 				}
 				return {
 					...prevColumns,
-					tasks: updatedTasks
+					[boardType]: {
+						...prevColumns[boardType],
+						tasks: updatedTasks
+					}
 				};
 			});
 
@@ -907,10 +909,10 @@ function ScrumMasterBoard() {
 					onDragEnd={handleDragEnd}
 				>
 					<div className="grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-2 gap-6">
-						{columns.current?.columnOrder?.map(columnId => {
-							const column = columns.current.columns[columnId];
+						{columns[boardType]?.columnOrder?.map(columnId => {
+							const column = columns[boardType].columns[columnId];
 							const tasks = column.taskIds.map(
-								taskId => columns.current.tasks[taskId]
+								taskId => columns[boardType].tasks[taskId]
 							);
 
 							return (

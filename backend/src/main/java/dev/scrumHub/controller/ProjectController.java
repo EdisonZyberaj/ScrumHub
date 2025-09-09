@@ -123,4 +123,35 @@ public class ProjectController {
         boolean exists = projectService.existsByKey(key);
         return ResponseEntity.ok(Map.of("exists", exists));
     }
+
+    @PostMapping("/{projectId}/members")
+    @PreAuthorize("hasRole('SCRUM_MASTER')")
+    public ResponseEntity<?> addProjectMember(
+            @PathVariable Long projectId,
+            @RequestBody Map<String, Object> memberRequest) {
+        try {
+            Long userId = Long.valueOf(memberRequest.get("userId").toString());
+            String roleInProject = memberRequest.get("roleInProject").toString();
+            
+            projectService.addProjectMember(projectId, userId, roleInProject);
+            return ResponseEntity.ok(Map.of("message", "Member added successfully"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{projectId}/members/{userId}")
+    @PreAuthorize("hasRole('SCRUM_MASTER')")
+    public ResponseEntity<?> removeProjectMember(
+            @PathVariable Long projectId,
+            @PathVariable Long userId) {
+        try {
+            projectService.removeProjectMember(projectId, userId);
+            return ResponseEntity.ok(Map.of("message", "Member removed successfully"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
 }

@@ -13,10 +13,10 @@ import {
     CheckCircle,
     AlertCircle,
     Target,
-    UserCheck,
-    ChevronDown
+    UserCheck
 } from 'lucide-react';
 import CreateProjectModal from './CreateProjectModal';
+import ProjectSettingsModal from './ProjectSettingsModal';
 import Navbar from '../../shared/Navbar';
 import Footer from '../../shared/Footer';
 
@@ -24,10 +24,11 @@ const ProjectManager = () => {
     const navigate = useNavigate();
     const [projects, setProjects] = useState([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const [selectedProject, setSelectedProject] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [isLoading, setIsLoading] = useState(true);
-    const [openDropdown, setOpenDropdown] = useState(null);
 
     // Fetch real data from backend API
     useEffect(() => {
@@ -65,14 +66,6 @@ const ProjectManager = () => {
         fetchProjects();
     }, []);
 
-    // Close dropdown when clicking outside
-    useEffect(() => {
-        const handleClickOutside = () => setOpenDropdown(null);
-        if (openDropdown) {
-            document.addEventListener('click', handleClickOutside);
-            return () => document.removeEventListener('click', handleClickOutside);
-        }
-    }, [openDropdown]);
 
     const formatDate = (dateString) => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -141,34 +134,15 @@ const ProjectManager = () => {
         }
     };
 
-    const handleStatusChange = async (projectId, newStatus) => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:8080/api/projects/${projectId}/status`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : ''
-                },
-                body: JSON.stringify({ status: newStatus })
-            });
+    const handleOpenSettings = (project) => {
+        setSelectedProject(project);
+        setShowSettingsModal(true);
+    };
 
-            if (response.ok) {
-                const updatedProject = await response.json();
-                setProjects(prev => prev.map(p => 
-                    p.id === projectId ? { ...p, status: newStatus } : p
-                ));
-            } else {
-                throw new Error('Failed to update project status');
-            }
-        } catch (error) {
-            console.error('Error updating project status:', error);
-            // Mock update for demo
-            setProjects(prev => prev.map(p => 
-                p.id === projectId ? { ...p, status: newStatus } : p
-            ));
-        }
-        setOpenDropdown(null);
+    const handleProjectUpdate = (updatedProject) => {
+        setProjects(prev => prev.map(p => 
+            p.id === updatedProject.id ? { ...p, ...updatedProject } : p
+        ));
     };
 
     const filteredProjects = projects.filter(project => {
@@ -350,59 +324,14 @@ const ProjectManager = () => {
                                     Scrum & Testing Views
                                 </div>
                             </button>
-                            <div className="relative">
-                                <button 
-                                    onClick={() => setOpenDropdown(openDropdown === project.id ? null : project.id)}
-                                    className="px-3 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 hover:border-gray-400 rounded-lg text-sm transition flex items-center"
-                                >
-                                    <Settings className="h-4 w-4 mr-1" />
-                                    <ChevronDown className="h-3 w-3" />
-                                </button>
-                                
-                                {openDropdown === project.id && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                                        <div className="py-1">
-                                            <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase">Change Status</div>
-                                            <button
-                                                onClick={() => handleStatusChange(project.id, 'active')}
-                                                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center ${
-                                                    project.status === 'active' ? 'text-green-600 font-medium' : 'text-gray-700'
-                                                }`}
-                                            >
-                                                <Clock className="h-4 w-4 mr-2" />
-                                                Active
-                                            </button>
-                                            <button
-                                                onClick={() => handleStatusChange(project.id, 'completed')}
-                                                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center ${
-                                                    project.status === 'completed' ? 'text-blue-600 font-medium' : 'text-gray-700'
-                                                }`}
-                                            >
-                                                <CheckCircle className="h-4 w-4 mr-2" />
-                                                Completed
-                                            </button>
-                                            <button
-                                                onClick={() => handleStatusChange(project.id, 'on-hold')}
-                                                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center ${
-                                                    project.status === 'on-hold' ? 'text-yellow-600 font-medium' : 'text-gray-700'
-                                                }`}
-                                            >
-                                                <AlertCircle className="h-4 w-4 mr-2" />
-                                                On Hold
-                                            </button>
-                                            <button
-                                                onClick={() => handleStatusChange(project.id, 'planned')}
-                                                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center ${
-                                                    project.status === 'planned' ? 'text-purple-600 font-medium' : 'text-gray-700'
-                                                }`}
-                                            >
-                                                <Target className="h-4 w-4 mr-2" />
-                                                Planned
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                            <button 
+                                onClick={() => handleOpenSettings(project)}
+                                className="px-3 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 hover:border-gray-400 rounded-lg text-sm transition flex items-center"
+                                title="Project Settings - Manage team members and status"
+                            >
+                                <Settings className="h-4 w-4 mr-1" />
+                                Settings
+                            </button>
                         </div>
                     </div>
                 ))}
@@ -437,6 +366,17 @@ const ProjectManager = () => {
                 isOpen={showCreateModal}
                 onClose={() => setShowCreateModal(false)}
                 onSubmit={handleCreateProject}
+            />
+
+            {/* Project Settings Modal */}
+            <ProjectSettingsModal
+                isOpen={showSettingsModal}
+                onClose={() => {
+                    setShowSettingsModal(false);
+                    setSelectedProject(null);
+                }}
+                project={selectedProject}
+                onUpdate={handleProjectUpdate}
             />
             </div>
             <Footer />
