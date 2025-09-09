@@ -137,7 +137,7 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
-    private TaskResponseDto convertToDto(Task task) {
+    public TaskResponseDto convertToDto(Task task) {
         UserResponseDto assigneeDto = null;
         if (task.getAssignee() != null) {
             assigneeDto = UserResponseDto.builder()

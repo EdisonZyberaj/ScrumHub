@@ -9,15 +9,13 @@ import {
     Target,
     Plus,
     Trash2,
-    UserCheck,
-    Search
+    UserCheck
 } from 'lucide-react';
 
 const ProjectSettingsModal = ({ isOpen, onClose, project, onUpdate }) => {
     const [activeTab, setActiveTab] = useState('members');
     const [projectMembers, setProjectMembers] = useState([]);
     const [availableUsers, setAvailableUsers] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
     const [selectedUser, setSelectedUser] = useState('');
     const [selectedRole, setSelectedRole] = useState('DEVELOPER');
     const [isLoading, setIsLoading] = useState(false);
@@ -187,11 +185,7 @@ const ProjectSettingsModal = ({ isOpen, onClose, project, onUpdate }) => {
 
     // Filter available users to exclude those already in the project
     const filteredAvailableUsers = availableUsers
-        .filter(user => !projectMembers.some(member => member.id === user.id))
-        .filter(user => 
-            (user.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (user.email || '').toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        .filter(user => !projectMembers.some(member => member.id === user.id));
 
     if (!isOpen || !project || !project.id) return null;
 
@@ -250,30 +244,16 @@ const ProjectSettingsModal = ({ isOpen, onClose, project, onUpdate }) => {
                             {/* Add Member Section */}
                             <div className="bg-gray-50 rounded-lg p-4">
                                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Add Team Member</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                    <div className="md:col-span-2">
-                                        <label htmlFor="user-search" className="block text-sm font-medium text-gray-700 mb-2">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label htmlFor="user-select" className="block text-sm font-medium text-gray-700 mb-2">
                                             Select User
-                                        </label>
-                                        <div className="relative">
-                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                                            <input
-                                                id="user-search"
-                                                type="text"
-                                                placeholder="Search users..."
-                                                value={searchTerm}
-                                                onChange={(e) => setSearchTerm(e.target.value)}
-                                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                                            />
-                                        </div>
-                                        <label htmlFor="user-select" className="sr-only">
-                                            Select User from List
                                         </label>
                                         <select
                                             id="user-select"
                                             value={selectedUser}
                                             onChange={(e) => setSelectedUser(e.target.value)}
-                                            className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                         >
                                             <option value="">Select a user...</option>
                                             {filteredAvailableUsers.map((user) => (

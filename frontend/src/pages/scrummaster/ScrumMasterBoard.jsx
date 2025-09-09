@@ -256,315 +256,182 @@ function ScrumMasterBoard() {
 			}
 
 			try {
-				// Mock team members data
-				const mockTeamMembers = [
-					{ id: 1, name: "John Smith", email: "john@example.com", role: "DEVELOPER" },
-					{ id: 2, name: "Alex Wong", email: "alex@example.com", role: "DEVELOPER" },
-					{ id: 3, name: "Emily Johnson", email: "emily@example.com", role: "DEVELOPER" },
-					{ id: 4, name: "Michael Brown", email: "michael@example.com", role: "DEVELOPER" },
-					{ id: 5, name: "Sarah Davis", email: "sarah@example.com", role: "TESTER" },
-					{ id: 6, name: "David Wilson", email: "david@example.com", role: "DEVELOPER" }
-				];
+				// Fetch team members
+				const membersResponse = await fetch(`http://localhost:8080/api/users?role=DEVELOPER,TESTER`, {
+					headers: { 'Authorization': `Bearer ${token}` }
+				});
+				
+				let teamMembersData = [];
+				if (membersResponse.ok) {
+					teamMembersData = await membersResponse.json();
+					// Convert to expected format
+					teamMembersData = teamMembersData.map(member => ({
+						id: member.id,
+						name: member.fullName,
+						email: member.email,
+						role: member.role
+					}));
+				}
 
-				const mockSprint = {
-					id: 1,
-					name: "Sprint 15",
-					startDate: "2025-05-05",
-					endDate: "2025-05-19",
-					goal: "Complete the payment integration and user profile features",
-					progress: 45
-				};
+				// Fetch active sprint for the project
+				let sprintData = null;
+				const sprintsResponse = await fetch(`http://localhost:8080/api/sprints?projectId=${projectId}`, {
+					headers: { 'Authorization': `Bearer ${token}` }
+				});
+				
+				if (sprintsResponse.ok) {
+					const sprints = await sprintsResponse.json();
+					// Find active sprint
+					sprintData = sprints.find(sprint => sprint.status === 'ACTIVE') || sprints[0];
+					if (sprintData) {
+						// Calculate progress based on completed tasks
+						const tasksResponse = await fetch(`http://localhost:8080/api/tasks?sprintId=${sprintData.id}`, {
+							headers: { 'Authorization': `Bearer ${token}` }
+						});
+						
+						if (tasksResponse.ok) {
+							const tasks = await tasksResponse.json();
+							const completedTasks = tasks.filter(task => task.status === 'DONE').length;
+							sprintData.progress = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
+						}
+					}
+				}
 
-				// Scrum Board Columns
-				const mockScrumColumns = {
-					todo: {
-						id: "todo",
-						title: "To Do",
-						taskIds: ["task-1", "task-2", "task-3", "task-4"]
+				// Fetch board data from backend
+				let boardData = { scrum: null, testing: null };
+				
+				if (sprintData) {
+					// Fetch scrum master board data
+					const boardResponse = await fetch(`http://localhost:8080/api/boards/scrum-master?sprintId=${sprintData.id}`, {
+						headers: { 'Authorization': `Bearer ${token}` }
+					});
+					
+					if (boardResponse.ok) {
+						const boardApiData = await boardResponse.json();
+						
+						// Process tasks to the expected format
+						const processedTasks = {};
+						const taskIdCounter = { value: 1 };
+						
+						// Helper function to process tasks
+						const processTasksForColumn = (tasks, columnType) => {
+							const taskIds = [];
+							tasks.forEach(task => {
+								const taskKey = `task-${taskIdCounter.value++}`;
+								processedTasks[taskKey] = {
+									id: taskKey,
+									originalId: task.id,
+									title: task.title,
+									description: task.description,
+									priority: task.priority,
+									dueDate: task.dueDate,
+									assignee: task.assignee ? {
+										id: task.assignee.id,
+										name: task.assignee.fullName,
+										avatar: null
+									} : null,
+									tags: task.tags || []
+								};
+								taskIds.push(taskKey);
+							});
+							return taskIds;
+						};
+						
+						// Scrum Board Columns with real data
+						const scrumColumns = {
+							todo: {
+								id: "todo",
+								title: "To Do",
+								taskIds: processTasksForColumn(boardApiData.tasksByStatus?.TO_DO || [], 'todo')
+							},
+							inProgress: {
+								id: "inProgress", 
+								title: "In Progress",
+								taskIds: processTasksForColumn(boardApiData.tasksByStatus?.IN_PROGRESS || [], 'inProgress')
+							},
+							review: {
+								id: "review",
+								title: "In Review", 
+								taskIds: processTasksForColumn(boardApiData.tasksByStatus?.READY_FOR_TESTING || [], 'review')
+							},
+							done: {
+								id: "done",
+								title: "Done",
+								taskIds: processTasksForColumn(boardApiData.tasksByStatus?.DONE || [], 'done')
+							}
+						};
+						
+						// Testing Board Columns with real data
+						const testingColumns = {
+							readyForTesting: {
+								id: "readyForTesting",
+								title: "Ready for Testing",
+								taskIds: processTasksForColumn(boardApiData.tasksByStatus?.READY_FOR_TESTING || [], 'readyForTesting')
+							},
+							inTesting: {
+								id: "inTesting", 
+								title: "In Testing",
+								taskIds: processTasksForColumn(boardApiData.tasksByStatus?.IN_TESTING || [], 'inTesting')
+							},
+							bugFound: {
+								id: "bugFound",
+								title: "Bug Found",
+								taskIds: processTasksForColumn(boardApiData.tasksByStatus?.BUG_FOUND || [], 'bugFound')
+							},
+							testPassed: {
+								id: "testPassed",
+								title: "Test Passed",
+								taskIds: processTasksForColumn(boardApiData.tasksByStatus?.TEST_PASSED || [], 'testPassed')
+							}
+						};
+						
+						boardData = {
+							scrum: {
+								columnOrder: ["todo", "inProgress", "review", "done"],
+								columns: scrumColumns,
+								tasks: processedTasks
+							},
+							testing: {
+								columnOrder: ["readyForTesting", "inTesting", "bugFound", "testPassed"], 
+								columns: testingColumns,
+								tasks: processedTasks
+							}
+						};
+					}
+				}
+
+				// Set state with real data
+				setActiveSprint(sprintData);
+				setTeamMembers(teamMembersData);
+				
+				// Store board data or use empty structure if no data
+				const defaultBoardData = {
+					scrum: {
+						columnOrder: ["todo", "inProgress", "review", "done"],
+						columns: {
+							todo: { id: "todo", title: "To Do", taskIds: [] },
+							inProgress: { id: "inProgress", title: "In Progress", taskIds: [] },
+							review: { id: "review", title: "In Review", taskIds: [] },
+							done: { id: "done", title: "Done", taskIds: [] }
+						},
+						tasks: {}
 					},
-					inProgress: {
-						id: "inProgress",
-						title: "In Progress",
-						taskIds: ["task-5", "task-6", "task-7"]
-					},
-					review: {
-						id: "review",
-						title: "In Review",
-						taskIds: ["task-8"]
-					},
-					done: {
-						id: "done",
-						title: "Done",
-						taskIds: ["task-9", "task-10"]
+					testing: {
+						columnOrder: ["readyForTesting", "inTesting", "bugFound", "testPassed"],
+						columns: {
+							readyForTesting: { id: "readyForTesting", title: "Ready for Testing", taskIds: [] },
+							inTesting: { id: "inTesting", title: "In Testing", taskIds: [] },
+							bugFound: { id: "bugFound", title: "Bug Found", taskIds: [] },
+							testPassed: { id: "testPassed", title: "Test Passed", taskIds: [] }
+						},
+						tasks: {}
 					}
 				};
-
-				// Testing Board Columns
-				const mockTestingColumns = {
-					readyForTesting: {
-						id: "readyForTesting",
-						title: "Ready for Testing",
-						taskIds: ["test-task-1", "test-task-2"]
-					},
-					inTesting: {
-						id: "inTesting",
-						title: "In Testing",
-						taskIds: ["test-task-3", "test-task-4"]
-					},
-					bugFound: {
-						id: "bugFound",
-						title: "Bug Found",
-						taskIds: ["test-task-5"]
-					},
-					testPassed: {
-						id: "testPassed",
-						title: "Test Passed",
-						taskIds: ["test-task-6", "test-task-7"]
-					}
-				};
-
-				const mockTasks = {
-					"task-1": {
-						id: "task-1",
-						title: "User profile page design",
-						description: "Create UI design for the user profile page",
-						priority: "Medium",
-						dueDate: "2025-05-17",
-						assignee: {
-							id: 3,
-							name: "Emily Johnson",
-							avatar: null
-						},
-						tags: ["Design", "Frontend"]
-					},
-					"task-2": {
-						id: "task-2",
-						title: "Implement password reset feature",
-						description: "Add functionality for users to reset their passwords",
-						priority: "High",
-						dueDate: "2025-05-18",
-						assignee: {
-							id: 1,
-							name: "John Smith",
-							avatar: null
-						},
-						tags: ["Backend", "Security"]
-					},
-					"task-3": {
-						id: "task-3",
-						title: "Fix mobile responsive issues",
-						description: "Address responsive design issues on small screens",
-						priority: "Low",
-						dueDate: "2025-05-15",
-						assignee: {
-							id: 2,
-							name: "Alex Wong",
-							avatar: null
-						},
-						tags: ["Frontend", "Bug"]
-					},
-					"task-4": {
-						id: "task-4",
-						title: "Create API documentation",
-						description: "Document all API endpoints for integration",
-						priority: "Medium",
-						dueDate: "2025-05-19",
-						assignee: null,
-						tags: ["Documentation"]
-					},
-					"task-5": {
-						id: "task-5",
-						title: "Implement payment gateway integration",
-						description: "Integrate Stripe payment processing",
-						priority: "Critical",
-						dueDate: "2025-05-16",
-						assignee: {
-							id: 4,
-							name: "Michael Brown",
-							avatar: null
-						},
-						tags: ["Backend", "Payment"]
-					},
-					"task-6": {
-						id: "task-6",
-						title: "Add user notification system",
-						description: "Create a notification system for user activities",
-						priority: "High",
-						dueDate: "2025-05-17",
-						assignee: {
-							id: 5,
-							name: "Sarah Davis",
-							avatar: null
-						},
-						tags: ["Frontend", "Backend"]
-					},
-					"task-7": {
-						id: "task-7",
-						title: "Improve page load performance",
-						description: "Optimize frontend to reduce load times",
-						priority: "Medium",
-						dueDate: "2025-05-18",
-						assignee: {
-						 id: 2,
-						 name: "Alex Wong",
-						 avatar: null
-						},
-						tags: ["Frontend", "Performance"]
-					},
-					"task-8": {
-						id: "task-8",
-						title: "User settings page",
-						description: "Create a page for users to manage account settings",
-						priority: "Medium",
-						dueDate: "2025-05-16",
-						assignee: {
-							id: 3,
-							name: "Emily Johnson",
-							avatar: null
-						},
-						tags: ["Frontend"]
-					},
-					"task-9": {
-						id: "task-9",
-						title: "Login page redesign",
-						description: "Update the login page with new branding",
-						priority: "Medium",
-						dueDate: "2025-05-12",
-						assignee: {
-							id: 3,
-							name: "Emily Johnson",
-							avatar: null
-						},
-						tags: ["Design", "Frontend"]
-					},
-					"task-10": {
-						id: "task-10",
-						title: "Setup CI/CD pipeline",
-						description: "Implement continuous integration and deployment",
-						priority: "High",
-						dueDate: "2025-05-11",
-						assignee: {
-							id: 6,
-							name: "David Wilson",
-							avatar: null
-						},
-						tags: ["DevOps"]
-					},
-					// Testing Tasks
-					"test-task-1": {
-						id: "test-task-1",
-						title: "Test user registration flow",
-						description: "Verify that new users can register successfully with valid data",
-						priority: "High",
-						dueDate: "2025-05-16",
-						assignee: {
-							id: 5,
-							name: "Sarah Davis",
-							avatar: null
-						},
-						tags: ["Frontend", "Backend", "Testing"]
-					},
-					"test-task-2": {
-						id: "test-task-2",
-						title: "Test payment gateway integration",
-						description: "Verify payment processing with different card types and scenarios",
-						priority: "Critical",
-						dueDate: "2025-05-17",
-						assignee: {
-							id: 5,
-							name: "Sarah Davis",
-							avatar: null
-						},
-						tags: ["Payment", "Testing", "Security"]
-					},
-					"test-task-3": {
-						id: "test-task-3",
-						title: "Mobile responsiveness testing",
-						description: "Test UI components across different mobile devices and screen sizes",
-						priority: "Medium",
-						dueDate: "2025-05-18",
-						assignee: {
-							id: 5,
-							name: "Sarah Davis",
-							avatar: null
-						},
-						tags: ["Frontend", "Testing", "Mobile"]
-					},
-					"test-task-4": {
-						id: "test-task-4",
-						title: "API performance testing",
-						description: "Load test all API endpoints for performance and reliability",
-						priority: "High",
-						dueDate: "2025-05-19",
-						assignee: {
-							id: 5,
-							name: "Sarah Davis",
-							avatar: null
-						},
-						tags: ["Backend", "Performance", "Testing"]
-					},
-					"test-task-5": {
-						id: "test-task-5",
-						title: "User profile validation bug",
-						description: "Fix validation issues in user profile update functionality",
-						priority: "High",
-						dueDate: "2025-05-15",
-						assignee: {
-							id: 3,
-							name: "Emily Johnson",
-							avatar: null
-						},
-						tags: ["Bug", "Frontend", "Testing"]
-					},
-					"test-task-6": {
-						id: "test-task-6",
-						title: "Login security tests",
-						description: "All security tests for login functionality passed successfully",
-						priority: "Critical",
-						dueDate: "2025-05-14",
-						assignee: {
-							id: 5,
-							name: "Sarah Davis",
-							avatar: null
-						},
-						tags: ["Security", "Testing", "Backend"]
-					},
-					"test-task-7": {
-						id: "test-task-7",
-						title: "Email notification tests",
-						description: "All email notification scenarios tested and working correctly",
-						priority: "Medium",
-						dueDate: "2025-05-13",
-						assignee: {
-							id: 5,
-							name: "Sarah Davis",
-							avatar: null
-						},
-						tags: ["Backend", "Testing", "Email"]
-					}
-				};
-
-				setActiveSprint(mockSprint);
-				setTeamMembers(mockTeamMembers);
 				
-				// Set columns based on board type
-				const scrumBoard = {
-					columnOrder: ["todo", "inProgress", "review", "done"],
-					columns: mockScrumColumns,
-					tasks: mockTasks
-				};
-				
-				const testingBoard = {
-					columnOrder: ["readyForTesting", "inTesting", "bugFound", "testPassed"],
-					columns: mockTestingColumns,
-					tasks: mockTasks
-				};
-				
-				// Store both board types
 				setColumns({
-					scrum: scrumBoard,
-					testing: testingBoard,
-					current: scrumBoard // Initialize with scrum board
+					...defaultBoardData,
+					...boardData,
+					current: boardData.scrum || defaultBoardData.scrum
 				});
 
 				setIsLoading(false);

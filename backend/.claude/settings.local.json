@@ -5,7 +5,13 @@
       "Read(//c/Users/dell/Projects/WebProjects/scrumhub/frontend/**)",
       "Read(//c/Users/dell/Projects/WebProjects/scrumhub/frontend/src/**)",
       "Bash(curl:*)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Read(//c/Users/dell/Projects/WebProjects/scrumhub/**)",
+      "Bash(mvn compile:*)",
+      "Bash(./mvnw compile:*)",
+      "Bash(./mvnw:*)",
+      "Bash(netstat:*)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []

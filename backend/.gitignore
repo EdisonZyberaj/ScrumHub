@@ -14,6 +14,7 @@ API_DOCUMENTATION.md
 .springBeans
 .sts4-cache
 .claude
+.DataLoader
 
 ### IntelliJ IDEA ###
 .idea

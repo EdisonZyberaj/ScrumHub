@@ -216,8 +216,9 @@ public class ProjectService {
         // Determine project status based on dates and activity
         String status = determineProjectStatus(project);
         
-        // Handle null collections safely
-        int memberCount = (project.getUsers() != null) ? project.getUsers().size() : 0;
+        // Handle null collections safely and avoid ConcurrentModificationException
+        // Use repository to count members instead of accessing lazy-loaded collection
+        long memberCount = userProjectRepository.countByProjectId(project.getId());
         int sprintCount = (sprints != null) ? sprints.size() : 0;
         
         return ProjectResponseDto.builder()
@@ -230,7 +231,7 @@ public class ProjectService {
                 .active(project.isActive())
                 .createdAt(project.getCreatedAt())
                 .updatedAt(project.getUpdatedAt())
-                .memberCount(memberCount)
+                .memberCount((int) memberCount)
                 .sprintCount(sprintCount)
                 .completedTasks((int) completedTasks)
                 .totalTasks((int) totalTasks)
