@@ -4,7 +4,7 @@ import dev.scrumHub.dto.CreateProjectRequestDto;
 import dev.scrumHub.dto.ProjectDto;
 import dev.scrumHub.dto.ProjectResponseDto;
 import dev.scrumHub.service.ProjectService;
-import lombok.RequiredArgsConstructor;
+import lombok.RequiredArgsConstructor; 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,7 +25,12 @@ public class ProjectController {
     @GetMapping
     public ResponseEntity<List<ProjectResponseDto>> getAllProjects(
             @RequestParam(defaultValue = "true") boolean activeOnly) {
-        List<ProjectResponseDto> projects = projectService.getAllActiveProjectsWithStats();
+        List<ProjectResponseDto> projects;
+        if (activeOnly) {
+            projects = projectService.getAllActiveProjectsWithStats();
+        } else {
+            projects = projectService.getAllProjectsWithStats();
+        }
         return ResponseEntity.ok(projects);
     }
 

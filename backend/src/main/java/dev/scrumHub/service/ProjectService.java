@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,6 +45,13 @@ public class ProjectService {
     
     public List<ProjectResponseDto> getAllActiveProjectsWithStats() {
         return projectRepository.findByActiveTrue()
+                .stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+    
+    public List<ProjectResponseDto> getAllProjectsWithStats() {
+        return projectRepository.findAll()
                 .stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
@@ -78,6 +86,7 @@ public class ProjectService {
 
         Project project = convertToEntity(projectDto);
         project.setActive(true);
+        project.setStatus(Project.ProjectStatus.ACTIVE);
         
         Project savedProject = projectRepository.save(project);
         return convertToDto(savedProject);
@@ -100,6 +109,7 @@ public class ProjectService {
                 .startDate(requestDto.getStartDate())
                 .endDate(requestDto.getEndDate())
                 .active(true)
+                .status(Project.ProjectStatus.ACTIVE)
                 .build();
         
         Project savedProject = projectRepository.save(project);
@@ -129,6 +139,17 @@ public class ProjectService {
         existingProject.setStartDate(projectDto.getStartDate());
         existingProject.setEndDate(projectDto.getEndDate());
         existingProject.setActive(projectDto.isActive());
+        
+        // Update status if provided
+        if (projectDto.getStatus() != null) {
+            try {
+                String normalizedStatus = projectDto.getStatus().toLowerCase().replace("-", "_");
+                Project.ProjectStatus status = Project.ProjectStatus.valueOf(normalizedStatus.toUpperCase());
+                existingProject.setStatus(status);
+            } catch (IllegalArgumentException e) {
+                // Keep existing status if invalid status provided
+            }
+        }
 
         Project updatedProject = projectRepository.save(existingProject);
         return convertToDto(updatedProject);
@@ -139,17 +160,28 @@ public class ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found with id: " + id));
         
+        // Parse and validate status
+        Project.ProjectStatus projectStatus;
+        try {
+            String normalizedStatus = status.toLowerCase().replace("-", "_");
+            projectStatus = Project.ProjectStatus.valueOf(normalizedStatus.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid status: " + status + ". Valid values are: active, completed, on-hold, planned");
+        }
+        
+        // Update project status
+        project.setStatus(projectStatus);
+        
         // Update project active status based on the status
-        switch (status.toLowerCase()) {
-            case "active":
+        switch (projectStatus) {
+            case ACTIVE:
+            case PLANNED:
                 project.setActive(true);
                 break;
-            case "completed":
-            case "on-hold":
+            case COMPLETED:
+            case ON_HOLD:
                 project.setActive(false);
                 break;
-            default:
-                throw new RuntimeException("Invalid status: " + status);
         }
         
         Project updatedProject = projectRepository.save(project);
@@ -191,6 +223,7 @@ public class ProjectService {
                 .startDate(project.getStartDate())
                 .endDate(project.getEndDate())
                 .active(project.isActive())
+                .status(convertStatusToString(project.getStatus()))
                 .createdAt(project.getCreatedAt())
                 .updatedAt(project.getUpdatedAt())
                 .build();
@@ -213,8 +246,8 @@ public class ProjectService {
         long totalTasks = taskRepository.countByProjectId(project.getId());
         long completedTasks = taskRepository.countByProjectIdAndStatus(project.getId(), TaskStatus.DONE);
         
-        // Determine project status based on dates and activity
-        String status = determineProjectStatus(project);
+        // Use the actual stored status instead of calculating it
+        String status = convertStatusToString(project.getStatus());
         
         // Handle null collections safely and avoid ConcurrentModificationException
         // Use repository to count members instead of accessing lazy-loaded collection
@@ -239,22 +272,38 @@ public class ProjectService {
                 .build();
     }
     
-    private String determineProjectStatus(Project project) {
-        if (!project.isActive()) {
-            return "completed";
+    private String convertStatusToString(Project.ProjectStatus status) {
+        if (status == null) {
+            return "active";
         }
-        
-        LocalDateTime now = LocalDateTime.now();
-        
-        if (project.getEndDate() != null && now.isAfter(project.getEndDate())) {
-            return "completed";
+        return status.name().toLowerCase().replace("_", "-");
+    }
+    
+    @Transactional
+    public void migrateProjectStatuses() {
+        try {
+            List<Project> allProjects = projectRepository.findAll();
+            List<Project> projectsToUpdate = new ArrayList<>();
+            
+            for (Project project : allProjects) {
+                if (project.getStatus() == null) {
+                    // Set status based on active field for existing projects
+                    if (project.isActive()) {
+                        project.setStatus(Project.ProjectStatus.ACTIVE);
+                    } else {
+                        project.setStatus(Project.ProjectStatus.COMPLETED);
+                    }
+                    projectsToUpdate.add(project);
+                }
+            }
+            
+            if (!projectsToUpdate.isEmpty()) {
+                projectRepository.saveAll(projectsToUpdate);
+            }
+        } catch (Exception e) {
+            // Don't fail the application startup due to migration issues
+            System.err.println("Warning: Project status migration failed: " + e.getMessage());
         }
-        
-        if (project.getStartDate() != null && now.isBefore(project.getStartDate())) {
-            return "planned";
-        }
-        
-        return "active";
     }
     
     @Transactional

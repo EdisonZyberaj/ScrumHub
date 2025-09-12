@@ -42,7 +42,7 @@ const ProjectManager = () => {
                     return;
                 }
 
-                const response = await fetch('http://localhost:8080/api/projects', {
+                const response = await fetch('http://localhost:8080/api/projects?activeOnly=false', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -64,7 +64,7 @@ const ProjectManager = () => {
         };
 
         fetchProjects();
-    }, []);
+    }, []); // Fetch once on component mount
 
 
     const formatDate = (dateString) => {
@@ -127,7 +127,10 @@ const ProjectManager = () => {
             }
 
             const newProject = await response.json();
-            setProjects(prev => [newProject, ...prev]);
+            // If showing active projects only, add to the list. Otherwise, refetch to ensure consistency
+            if (filterActive === 'active' || filterActive === 'all') {
+                setProjects(prev => [newProject, ...prev]);
+            }
         } catch (error) {
             console.error('Error creating project:', error);
             throw error;

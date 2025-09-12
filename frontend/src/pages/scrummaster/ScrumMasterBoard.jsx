@@ -34,6 +34,7 @@ import {
 import Navbar from "../../components/shared/Navbar";
 import Footer from "../../components/shared/Footer";
 import TaskDetailModal from "../../components/scrummaster/TaskAssignment/TaskDetailModal";
+import CreateTaskModal from "../../components/scrummaster/TaskAssignment/CreateTaskModal";
 const getPriorityColor = priority => {
     switch (priority.toLowerCase()) {
         case "critical":
@@ -243,8 +244,12 @@ function ScrumMasterBoard() {
 	const [error, setError] = useState(null);
 	const [selectedTask, setSelectedTask] = useState(null);
 	const [showTaskModal, setShowTaskModal] = useState(false);
+	const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
+	const [preSelectedStatus, setPreSelectedStatus] = useState(null);
 	const [teamMembers, setTeamMembers] = useState([]);
 	const [boardType, setBoardType] = useState('scrum'); // 'scrum' or 'testing'
+	const [projects, setProjects] = useState([]);
+	const [sprints, setSprints] = useState([]);
 
 	useEffect(() => {
 		const fetchSprintData = async () => {
@@ -256,6 +261,22 @@ function ScrumMasterBoard() {
 			}
 
 			try {
+				console.log('🔍 [DEBUG] Fetching data for project ID:', projectId); // Debug log
+				
+				// Fetch project data first
+				const projectResponse = await fetch(`http://localhost:8080/api/projects/${projectId}`, {
+					headers: { 'Authorization': `Bearer ${token}` }
+				});
+				
+				let projectData = null;
+				if (projectResponse.ok) {
+					projectData = await projectResponse.json();
+					console.log('📋 [DEBUG] Project data:', projectData); // Debug log
+					setProjects([projectData]); // Store single project as array for modal
+				} else {
+					console.error('❌ [ERROR] Failed to fetch project data:', projectResponse.status);
+				}
+
 				// Fetch team members
 				const membersResponse = await fetch(`http://localhost:8080/api/users?role=DEVELOPER,TESTER`, {
 					headers: { 'Authorization': `Bearer ${token}` }
@@ -280,9 +301,12 @@ function ScrumMasterBoard() {
 				});
 				
 				if (sprintsResponse.ok) {
-					const sprints = await sprintsResponse.json();
+					const sprintsData = await sprintsResponse.json();
+					console.log('🏃 [DEBUG] Sprints data:', sprintsData); // Debug log
+					setSprints(sprintsData); // Store sprints for modal
 					// Find active sprint
-					sprintData = sprints.find(sprint => sprint.status === 'ACTIVE') || sprints[0];
+					sprintData = sprintsData.find(sprint => sprint.status === 'ACTIVE') || sprintsData[0];
+					console.log('🎯 [DEBUG] Selected sprint:', sprintData); // Debug log
 					if (sprintData) {
 						// Calculate progress based on completed tasks
 						const tasksResponse = await fetch(`http://localhost:8080/api/tasks?sprintId=${sprintData.id}`, {
@@ -291,43 +315,105 @@ function ScrumMasterBoard() {
 						
 						if (tasksResponse.ok) {
 							const tasks = await tasksResponse.json();
+							console.log('📝 [DEBUG] Sprint tasks for progress:', tasks); // Debug log
 							const completedTasks = tasks.filter(task => task.status === 'DONE').length;
 							sprintData.progress = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
 						}
 					}
+				} else {
+					console.error('❌ [ERROR] Failed to fetch sprints:', sprintsResponse.status);
 				}
 
-				// Fetch board data from backend
+				// First, let's check if there are ANY tasks for this project
+				console.log('🔍 [DEBUG] Checking if tasks exist for project...');
+				try {
+					const directTasksResponse = await fetch(`http://localhost:8080/api/tasks?projectId=${projectId}`, {
+						headers: { 'Authorization': `Bearer ${token}` }
+					});
+					if (directTasksResponse.ok) {
+						const directTasks = await directTasksResponse.json();
+						console.log('📝 [DEBUG] Direct project tasks found:', directTasks.length);
+						console.log('📝 [DEBUG] Sample tasks:', directTasks.slice(0, 3));
+					} else {
+						console.error('❌ [ERROR] Failed to fetch direct tasks:', directTasksResponse.status);
+					}
+				} catch (e) {
+					console.error('❌ [ERROR] Error fetching direct tasks:', e);
+				}
+
+				// Fetch board data using correct API endpoint
 				let boardData = { scrum: null, testing: null };
 				
-				// Fetch board data - prefer sprint data, fallback to project data
-				let boardResponse;
-				if (sprintData) {
-					// Fetch scrum master board data by sprint
-					boardResponse = await fetch(`http://localhost:8080/api/boards/scrum-master?sprintId=${sprintData.id}`, {
-						headers: { 'Authorization': `Bearer ${token}` }
-					});
-				} else {
-					// Fallback: fetch board data by project ID
-					boardResponse = await fetch(`http://localhost:8080/api/boards/project/${projectId}/tasks-by-status`, {
-						headers: { 'Authorization': `Bearer ${token}` }
-					});
-				}
-				
-				if (boardResponse.ok) {
-						const boardApiData = await boardResponse.json();
+				try {
+					let boardResponse;
+					let apiUrl;
+					if (sprintData) {
+						// Use scrum master board endpoint with sprint ID and project ID
+						apiUrl = `http://localhost:8080/api/boards/scrum-master?sprintId=${sprintData.id}&projectId=${projectId}`;
+						console.log('🌐 [DEBUG] Using sprint-based API:', apiUrl);
+						boardResponse = await fetch(apiUrl, {
+							headers: { 'Authorization': `Bearer ${token}` }
+						});
+					} else {
+						// Use project-based endpoint
+						apiUrl = `http://localhost:8080/api/boards/project/${projectId}/tasks-by-status`;
+						console.log('🌐 [DEBUG] Using project-based API:', apiUrl);
+						boardResponse = await fetch(apiUrl, {
+							headers: { 'Authorization': `Bearer ${token}` }
+						});
+					}
+					
+					if (boardResponse.ok) {
+						const apiData = await boardResponse.json();
+						console.log('📊 [DEBUG] Raw API Response:', apiData);
+						console.log('📊 [DEBUG] API Response keys:', Object.keys(apiData));
+						console.log('📊 [DEBUG] API Response JSON:', JSON.stringify(apiData, null, 2));
 						
-						// Process tasks to the expected format
+						// Extract tasks by status
+						let tasksByStatus;
+						if (apiData.tasksByStatus) {
+							// Scrum master board format
+							console.log('📁 [DEBUG] Using tasksByStatus from scrum master format');
+							tasksByStatus = apiData.tasksByStatus;
+							console.log('📁 [DEBUG] tasksByStatus content:', JSON.stringify(tasksByStatus, null, 2));
+						} else {
+							// Direct tasks by status format
+							console.log('📁 [DEBUG] Using direct format from project endpoint');
+							tasksByStatus = apiData;
+						}
+						
+						console.log('📋 [DEBUG] Extracted tasksByStatus:', tasksByStatus);
+						
+						// Ensure tasksByStatus has all required status keys
+						tasksByStatus = {
+							TO_DO: [],
+							IN_PROGRESS: [],
+							READY_FOR_TESTING: [],
+							IN_TESTING: [],
+							BUG_FOUND: [],
+							TEST_PASSED: [],
+							DONE: [],
+							...tasksByStatus
+						};
+						
+						console.log('✅ [DEBUG] Final tasksByStatus with defaults:', tasksByStatus);
+						
+						// Process tasks and create board structure
 						const processedTasks = {};
-						const taskIdCounter = { value: 1 };
+						let taskCounter = 1;
 						
-						// Helper function to process tasks
-						const processTasksForColumn = (tasks, columnType) => {
-							const taskIds = [];
-							tasks.forEach(task => {
-								const taskKey = `task-${taskIdCounter.value++}`;
-								processedTasks[taskKey] = {
-									id: taskKey,
+						const processTasksForColumn = (tasks) => {
+							console.log('🔄 [DEBUG] Processing tasks for column:', tasks);
+							if (!tasks || !Array.isArray(tasks)) {
+								console.log('⚠️ [DEBUG] Tasks is not an array or is null:', tasks);
+								return [];
+							}
+							
+							const taskIds = tasks.map(task => {
+								const taskId = `task-${taskCounter++}`;
+								console.log('📝 [DEBUG] Processing task:', task.title, 'with ID:', taskId);
+								processedTasks[taskId] = {
+									id: taskId,
 									originalId: task.id,
 									title: task.title,
 									description: task.description,
@@ -340,82 +426,204 @@ function ScrumMasterBoard() {
 									} : null,
 									tags: task.tags || []
 								};
-								taskIds.push(taskKey);
+								return taskId;
 							});
+							
+							console.log('✅ [DEBUG] Generated task IDs for column:', taskIds);
 							return taskIds;
 						};
 						
-						// Handle different response formats
-						let tasksByStatus;
-						if (sprintData && boardApiData.tasksByStatus) {
-							// Sprint-based response format
-							tasksByStatus = boardApiData.tasksByStatus;
-						} else {
-							// Project-based response format (already grouped by status)
-							tasksByStatus = boardApiData;
-						}
-						
-						// Scrum Board Columns with real data
-						const scrumColumns = {
-							todo: {
-								id: "todo",
-								title: "To Do",
-								taskIds: processTasksForColumn(tasksByStatus?.TO_DO || [], 'todo')
-							},
-							inProgress: {
-								id: "inProgress", 
-								title: "In Progress",
-								taskIds: processTasksForColumn(tasksByStatus?.IN_PROGRESS || [], 'inProgress')
-							},
-							review: {
-								id: "review",
-								title: "In Review", 
-								taskIds: processTasksForColumn(tasksByStatus?.READY_FOR_TESTING || [], 'review')
-							},
-							done: {
-								id: "done",
-								title: "Done",
-								taskIds: processTasksForColumn(tasksByStatus?.DONE || [], 'done')
-							}
-						};
-						
-						// Testing Board Columns with real data
-						const testingColumns = {
-							readyForTesting: {
-								id: "readyForTesting",
-								title: "Ready for Testing",
-								taskIds: processTasksForColumn(tasksByStatus?.READY_FOR_TESTING || [], 'readyForTesting')
-							},
-							inTesting: {
-								id: "inTesting", 
-								title: "In Testing",
-								taskIds: processTasksForColumn(tasksByStatus?.IN_TESTING || [], 'inTesting')
-							},
-							bugFound: {
-								id: "bugFound",
-								title: "Bug Found",
-								taskIds: processTasksForColumn(tasksByStatus?.BUG_FOUND || [], 'bugFound')
-							},
-							testPassed: {
-								id: "testPassed",
-								title: "Test Passed",
-								taskIds: processTasksForColumn(tasksByStatus?.TEST_PASSED || [], 'testPassed')
-							}
-						};
-						
+						// Build board structure
 						boardData = {
 							scrum: {
 								columnOrder: ["todo", "inProgress", "review", "done"],
-								columns: scrumColumns,
+								columns: {
+									todo: {
+										id: "todo",
+										title: "To Do",
+										taskIds: processTasksForColumn(tasksByStatus.TO_DO || [])
+									},
+									inProgress: {
+										id: "inProgress", 
+										title: "In Progress",
+										taskIds: processTasksForColumn(tasksByStatus.IN_PROGRESS || [])
+									},
+									review: {
+										id: "review",
+										title: "In Review", 
+										taskIds: processTasksForColumn(tasksByStatus.READY_FOR_TESTING || [])
+									},
+									done: {
+										id: "done",
+										title: "Done",
+										taskIds: processTasksForColumn(tasksByStatus.DONE || [])
+									}
+								},
 								tasks: processedTasks
 							},
 							testing: {
-								columnOrder: ["readyForTesting", "inTesting", "bugFound", "testPassed"], 
-								columns: testingColumns,
+								columnOrder: ["readyForTesting", "inTesting", "bugFound", "testPassed"],
+								columns: {
+									readyForTesting: {
+										id: "readyForTesting",
+										title: "Ready for Testing",
+										taskIds: processTasksForColumn(tasksByStatus.READY_FOR_TESTING || [])
+									},
+									inTesting: {
+										id: "inTesting", 
+										title: "In Testing",
+										taskIds: processTasksForColumn(tasksByStatus.IN_TESTING || [])
+									},
+									bugFound: {
+										id: "bugFound",
+										title: "Bug Found",
+										taskIds: processTasksForColumn(tasksByStatus.BUG_FOUND || [])
+									},
+									testPassed: {
+										id: "testPassed",
+										title: "Test Passed",
+										taskIds: processTasksForColumn(tasksByStatus.TEST_PASSED || [])
+									}
+								},
 								tasks: processedTasks
 							}
 						};
+						
+						console.log('🎯 [DEBUG] Final processed board data:', boardData);
+						console.log('📊 [DEBUG] Total processed tasks:', Object.keys(boardData.scrum.tasks).length);
+						
+						// Debug each column
+						Object.keys(boardData.scrum.columns).forEach(columnId => {
+							const column = boardData.scrum.columns[columnId];
+							console.log(`📋 [DEBUG] Column ${columnId}:`, {
+								title: column.title,
+								taskCount: column.taskIds.length,
+								taskIds: column.taskIds
+							});
+						});
+					} else {
+						console.error('Failed to fetch board data:', boardResponse.status, boardResponse.statusText);
+						try {
+							const errorText = await boardResponse.text();
+							console.error('Board API error details:', errorText);
+						} catch (e) {
+							console.error('Could not read error response');
+						}
+						
+						// If scrum-master endpoint fails (403 forbidden), try the fallback endpoint
+						if (boardResponse.status === 403 && sprintData) {
+							console.warn('Scrum master endpoint forbidden, trying project-based endpoint');
+							try {
+								const fallbackResponse = await fetch(`http://localhost:8080/api/boards/project/${projectId}/tasks-by-status`, {
+									headers: { 'Authorization': `Bearer ${token}` }
+								});
+								if (fallbackResponse.ok) {
+									const fallbackData = await fallbackResponse.json();
+									console.log('Fallback API Response:', fallbackData);
+									
+									const tasksByStatus = {
+										TO_DO: [],
+										IN_PROGRESS: [],
+										READY_FOR_TESTING: [],
+										IN_TESTING: [],
+										BUG_FOUND: [],
+										TEST_PASSED: [],
+										DONE: [],
+										...fallbackData
+									};
+									
+									// Use the same processing logic as above
+									const processedTasks = {};
+									let taskCounter = 1;
+									
+									const processTasksForColumn = (tasks) => {
+										if (!tasks || !Array.isArray(tasks)) return [];
+										
+										return tasks.map(task => {
+											const taskId = `task-${taskCounter++}`;
+											processedTasks[taskId] = {
+												id: taskId,
+												originalId: task.id,
+												title: task.title,
+												description: task.description,
+												priority: task.priority,
+												dueDate: task.dueDate,
+												assignee: task.assignee ? {
+													id: task.assignee.id,
+													name: task.assignee.fullName,
+													avatar: null
+												} : null,
+												tags: task.tags || []
+											};
+											return taskId;
+										});
+									};
+									
+									boardData = {
+										scrum: {
+											columnOrder: ["todo", "inProgress", "review", "done"],
+											columns: {
+												todo: {
+													id: "todo",
+													title: "To Do",
+													taskIds: processTasksForColumn(tasksByStatus.TO_DO || [])
+												},
+												inProgress: {
+													id: "inProgress", 
+													title: "In Progress",
+													taskIds: processTasksForColumn(tasksByStatus.IN_PROGRESS || [])
+												},
+												review: {
+													id: "review",
+													title: "In Review", 
+													taskIds: processTasksForColumn(tasksByStatus.READY_FOR_TESTING || [])
+												},
+												done: {
+													id: "done",
+													title: "Done",
+													taskIds: processTasksForColumn(tasksByStatus.DONE || [])
+												}
+											},
+											tasks: processedTasks
+										},
+										testing: {
+											columnOrder: ["readyForTesting", "inTesting", "bugFound", "testPassed"],
+											columns: {
+												readyForTesting: {
+													id: "readyForTesting",
+													title: "Ready for Testing",
+													taskIds: processTasksForColumn(tasksByStatus.READY_FOR_TESTING || [])
+												},
+												inTesting: {
+													id: "inTesting", 
+													title: "In Testing",
+													taskIds: processTasksForColumn(tasksByStatus.IN_TESTING || [])
+												},
+												bugFound: {
+													id: "bugFound",
+													title: "Bug Found",
+													taskIds: processTasksForColumn(tasksByStatus.BUG_FOUND || [])
+												},
+												testPassed: {
+													id: "testPassed",
+													title: "Test Passed",
+													taskIds: processTasksForColumn(tasksByStatus.TEST_PASSED || [])
+												}
+											},
+											tasks: processedTasks
+										}
+									};
+									
+									console.log('Fallback board data processed successfully');
+								}
+							} catch (fallbackError) {
+								console.error('Fallback API also failed:', fallbackError);
+							}
+						}
 					}
+				} catch (error) {
+					console.error('Error fetching board data:', error);
+				}
 
 				// Set state with real data
 				setActiveSprint(sprintData);
@@ -445,11 +653,23 @@ function ScrumMasterBoard() {
 					}
 				};
 				
-				setColumns({
-					...defaultBoardData,
-					...boardData,
-					current: boardData.scrum || defaultBoardData.scrum
+				// Ensure we have valid board data
+				if (!boardData.scrum) {
+					boardData = defaultBoardData;
+				}
+				
+				console.log('🔧 [DEBUG] Setting columns state with:', {
+					scrum: boardData.scrum,
+					testing: boardData.testing
 				});
+				
+				setColumns({
+					scrum: boardData.scrum,
+					testing: boardData.testing,
+					current: boardData.scrum
+				});
+				
+				console.log('✅ [DEBUG] Columns state has been set');
 
 				setIsLoading(false);
 			} catch (err) {
@@ -460,7 +680,7 @@ function ScrumMasterBoard() {
 		};
 
 		fetchSprintData();
-	}, []);
+	}, [projectId]); // Re-fetch when projectId changes
 
 	const sensors = useSensors(
 		useSensor(PointerSensor),
@@ -545,7 +765,7 @@ function ScrumMasterBoard() {
 	};
 
 	const handleAddTask = (columnId) => {
-		// Navigate to task assignment page with pre-selected column status
+		// Show create task modal with pre-selected column status
 		const statusMap = {
 			// Scrum Board Status
 			'todo': 'TO_DO',
@@ -560,24 +780,29 @@ function ScrumMasterBoard() {
 		};
 		
 		const targetStatus = statusMap[columnId] || 'TO_DO';
-		navigate(`/scrummaster/task-assignment?status=${targetStatus}&project=${projectId}&board=${boardType}`);
+		setPreSelectedStatus(targetStatus);
+		setShowCreateTaskModal(true);
 	};
 
 	const handleTaskClick = (task) => {
-		console.log('handleTaskClick called with:', task.title); // Debug log
+		console.log('handleTaskClick called with:', task); // Debug log
+		if (!task || !task.title) {
+			console.error('Invalid task data received:', task);
+			return;
+		}
+		
 		// Convert task format to match TaskDetailModal expectations
 		const formattedTask = {
 			...task,
 			status: getTaskStatus(task),
 			assignedTo: task.assignee?.id || null,
-			estimatedHours: 8, // Mock data
-			createdAt: '2025-05-01', // Mock data
-			updatedAt: '2025-05-07' // Mock data
+			estimatedHours: task.estimatedHours || 8,
+			createdAt: task.createdAt || new Date().toISOString().split('T')[0],
+			updatedAt: task.updatedAt || new Date().toISOString().split('T')[0]
 		};
 		console.log('Setting selected task:', formattedTask); // Debug log
 		setSelectedTask(formattedTask);
 		setShowTaskModal(true);
-		console.log('Modal should be opening...'); // Debug log
 	};
 
 	const getTaskStatus = (task) => {
@@ -607,11 +832,74 @@ function ScrumMasterBoard() {
 	};
 
 	const handleBoardTypeSwitch = (newBoardType) => {
+		console.log('Switching to board type:', newBoardType);
 		setBoardType(newBoardType);
-		setColumns(prev => ({
-			...prev,
-			current: prev[newBoardType]
-		}));
+		setColumns(prev => {
+			const newCurrent = prev[newBoardType] || prev.scrum || {};
+			console.log('Setting current board to:', newCurrent);
+			return {
+				...prev,
+				current: newCurrent
+			};
+		});
+	};
+
+	const handleCreateTask = async (taskData) => {
+		try {
+			const token = localStorage.getItem('token');
+			if (!token) {
+				throw new Error('No authentication token found');
+			}
+
+			// Prepare task data according to CreateTaskRequestDto structure
+			const taskPayload = {
+				title: taskData.title,
+				description: taskData.description,
+				acceptanceCriteria: taskData.acceptanceCriteria || 'Task should be completed according to requirements',
+				projectId: parseInt(projectId),
+				sprintId: activeSprint?.id || null,
+				type: 'USER_STORY', // Default type
+				priority: taskData.priority || 'MEDIUM',
+				status: preSelectedStatus || 'TO_DO',
+				estimatedHours: taskData.estimatedHours || null,
+				dueDate: taskData.dueDate ? taskData.dueDate + 'T23:59:59' : null,
+				assigneeId: null // Default to unassigned
+			};
+
+			console.log('Creating task with payload:', taskPayload); // Debug log
+
+			// Create task via API
+			const response = await fetch('http://localhost:8080/api/tasks', {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(taskPayload)
+			});
+
+			if (!response.ok) {
+				let errorMessage = 'Failed to create task';
+				try {
+					const errorData = await response.json();
+					errorMessage = errorData.message || errorData.error || errorMessage;
+				} catch (e) {
+					errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+				}
+				console.error('Task creation failed:', errorMessage);
+				throw new Error(errorMessage);
+			}
+
+			const newTask = await response.json();
+			console.log('Task created successfully:', newTask);
+			
+			// Refresh the page to reload board data with new task
+			window.location.reload();
+			
+		} catch (error) {
+			console.error('Error creating task:', error);
+			throw error;
+		}
 	};
 
 	const handleReassignTask = async (taskId, newAssigneeId) => {
@@ -705,7 +993,13 @@ function ScrumMasterBoard() {
 									</span>
 								</div>
 							</div>
-							<button className="mt-4 md:mt-0 bg-primary text-white px-4 py-2 rounded-md hover:bg-hoverBlue transition flex items-center">
+							<button 
+								onClick={() => {
+									setPreSelectedStatus('TO_DO');
+									setShowCreateTaskModal(true);
+								}}
+								className="mt-4 md:mt-0 bg-primary text-white px-4 py-2 rounded-md hover:bg-hoverBlue transition flex items-center"
+							>
 								<Plus className="h-4 w-4 mr-1" />
 								Add Task
 							</button>
@@ -793,22 +1087,42 @@ function ScrumMasterBoard() {
 					onDragEnd={handleDragEnd}
 				>
 					<div className="grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-2 gap-6">
-						{columns[boardType]?.columnOrder?.map(columnId => {
-							const column = columns[boardType].columns[columnId];
-							const tasks = column.taskIds.map(
-								taskId => columns[boardType].tasks[taskId]
-							);
+						{(() => {
+							console.log('🎨 [DEBUG] Rendering board. boardType:', boardType);
+							console.log('🎨 [DEBUG] Available columns keys:', Object.keys(columns));
+							console.log('🎨 [DEBUG] Current board data:', columns[boardType]);
+							
+							return columns[boardType]?.columnOrder?.map(columnId => {
+								console.log('🎨 [DEBUG] Rendering column:', columnId);
+								const column = columns[boardType]?.columns?.[columnId];
+								if (!column) {
+									console.warn('❌ [WARN] Column not found:', columnId, 'in boardType:', boardType);
+									return null;
+								}
+								
+								console.log('🎨 [DEBUG] Column data:', column);
+								const tasks = (column.taskIds || []).map(taskId => {
+									const task = columns[boardType]?.tasks?.[taskId];
+									if (!task) {
+										console.warn('❌ [WARN] Task not found:', taskId);
+										return null;
+									}
+									return task;
+								}).filter(Boolean);
 
-							return (
-								<Column
-									key={column.id}
-									column={column}
-									tasks={tasks}
-									onAddTask={handleAddTask}
-									onTaskClick={handleTaskClick}
-								/>
-							);
-						})}
+								console.log('🎨 [DEBUG] Column', columnId, 'has', tasks.length, 'tasks');
+
+								return (
+									<Column
+										key={column.id}
+										column={column}
+										tasks={tasks}
+										onAddTask={handleAddTask}
+										onTaskClick={handleTaskClick}
+									/>
+								);
+							}).filter(Boolean);
+						})()}
 					</div>
 				</DndContext>
 			</main>
@@ -825,6 +1139,22 @@ function ScrumMasterBoard() {
 				onReassign={handleReassignTask}
 				teamMembers={teamMembers}
 			/>
+
+			{/* Create Task Modal */}
+			<CreateTaskModal
+				isOpen={showCreateTaskModal}
+				onClose={() => {
+					setShowCreateTaskModal(false);
+					setPreSelectedStatus(null);
+				}}
+				onSubmit={handleCreateTask}
+				projects={projects}
+				sprints={sprints}
+				selectedProject={projects[0]?.id || null}
+				selectedSprint={activeSprint?.id || null}
+				preSelectedStatus={preSelectedStatus}
+			/>
+			
 			{/* Debug info */}
 			{console.log('Modal state - showTaskModal:', showTaskModal, 'selectedTask:', selectedTask?.title)}
 

@@ -75,43 +75,60 @@ public class BoardService {
     public Map<String, Object> getScrumMasterBoard(Long projectId, Long sprintId) {
         List<Task> tasks;
         
-        if (sprintId != null) {
-            tasks = taskRepository.findBySprintIdOrderByPriorityDesc(sprintId);
-        } else if (projectId != null) {
-            tasks = taskRepository.findByProjectIdOrderByCreatedAtDesc(projectId);
-        } else {
-            tasks = new ArrayList<>();
-        }
+        try {
+            if (sprintId != null) {
+                tasks = new ArrayList<>(taskRepository.findBySprintIdOrderByPriorityDesc(sprintId));
+            } else if (projectId != null) {
+                tasks = new ArrayList<>(taskRepository.findByProjectIdOrderByCreatedAtDesc(projectId));
+            } else {
+                tasks = new ArrayList<>();
+            }
 
-        Map<String, Object> boardData = new HashMap<>();
-        
-        // Group tasks by status
-        Map<String, List<TaskResponseDto>> tasksByStatus = groupTasksByStatus(tasks);
-        boardData.put("tasksByStatus", tasksByStatus);
-        
-        // Group tasks by assignee
-        Map<String, List<TaskResponseDto>> tasksByAssignee = groupTasksByAssignee(tasks);
-        boardData.put("tasksByAssignee", tasksByAssignee);
-        
-        // Add summary statistics
-        Map<String, Integer> stats = new HashMap<>();
-        stats.put("totalTasks", tasks.size());
-        stats.put("completedTasks", (int) tasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.DONE).count());
-        stats.put("inProgressTasks", (int) tasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.IN_PROGRESS).count());
-        stats.put("unassignedTasks", (int) tasks.stream().filter(t -> t.getAssignee() == null).count());
-        boardData.put("stats", stats);
-        
-        return boardData;
+            Map<String, Object> boardData = new HashMap<>();
+            
+            // Group tasks by status
+            Map<String, List<TaskResponseDto>> tasksByStatus = groupTasksByStatus(tasks);
+            boardData.put("tasksByStatus", tasksByStatus);
+            
+            // Group tasks by assignee
+            Map<String, List<TaskResponseDto>> tasksByAssignee = groupTasksByAssignee(tasks);
+            boardData.put("tasksByAssignee", tasksByAssignee);
+            
+            // Add summary statistics
+            Map<String, Integer> stats = new HashMap<>();
+            stats.put("totalTasks", tasks.size());
+            stats.put("completedTasks", (int) tasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.DONE).count());
+            stats.put("inProgressTasks", (int) tasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.IN_PROGRESS).count());
+            stats.put("unassignedTasks", (int) tasks.stream().filter(t -> t.getAssignee() == null).count());
+            boardData.put("stats", stats);
+            
+            return boardData;
+        } catch (Exception e) {
+            // Return empty board data if there's an error
+            Map<String, Object> emptyBoardData = new HashMap<>();
+            emptyBoardData.put("tasksByStatus", new HashMap<>());
+            emptyBoardData.put("tasksByAssignee", new HashMap<>());
+            emptyBoardData.put("stats", new HashMap<>());
+            return emptyBoardData;
+        }
     }
 
     public Map<String, List<TaskResponseDto>> getTasksByStatusForProject(Long projectId) {
-        List<Task> tasks = taskRepository.findByProjectIdOrderByCreatedAtDesc(projectId);
-        return groupTasksByStatus(tasks);
+        try {
+            List<Task> tasks = new ArrayList<>(taskRepository.findByProjectIdOrderByCreatedAtDesc(projectId));
+            return groupTasksByStatus(tasks);
+        } catch (Exception e) {
+            return new HashMap<>();
+        }
     }
 
     public Map<String, List<TaskResponseDto>> getTasksByAssigneeForProject(Long projectId) {
-        List<Task> tasks = taskRepository.findByProjectIdOrderByCreatedAtDesc(projectId);
-        return groupTasksByAssignee(tasks);
+        try {
+            List<Task> tasks = new ArrayList<>(taskRepository.findByProjectIdOrderByCreatedAtDesc(projectId));
+            return groupTasksByAssignee(tasks);
+        } catch (Exception e) {
+            return new HashMap<>();
+        }
     }
 
     private Map<String, List<TaskResponseDto>> groupTasksByStatus(List<Task> tasks) {

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug ScrumMasterBoard APIs</title>
+</head>
+<body>
+    <h1>Debug Test - Open Browser Console</h1>
+    <script>
+        // Test function to check APIs
+        async function testAPIs() {
+            const token = localStorage.getItem('token');
+            const projectId = 1;
+            
+            console.log('🔍 Testing APIs with token:', token ? 'Found' : 'Missing');
+            
+            // Test 1: Direct tasks
+            try {
+                console.log('🔍 Testing direct tasks API...');
+                const response = await fetch(`http://localhost:8080/api/tasks?projectId=${projectId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                console.log('📝 Direct tasks response:', response.status, response.statusText);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('📝 Direct tasks data:', data);
+                }
+            } catch (e) {
+                console.error('❌ Direct tasks error:', e);
+            }
+            
+            // Test 2: Project board API
+            try {
+                console.log('🔍 Testing project board API...');
+                const response = await fetch(`http://localhost:8080/api/boards/project/${projectId}/tasks-by-status`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                console.log('📊 Project board response:', response.status, response.statusText);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('📊 Project board data:', data);
+                } else {
+                    const errorText = await response.text();
+                    console.error('📊 Project board error:', errorText);
+                }
+            } catch (e) {
+                console.error('❌ Project board error:', e);
+            }
+            
+            // Test 3: Scrum master API
+            try {
+                console.log('🔍 Testing scrum master API...');
+                const response = await fetch(`http://localhost:8080/api/boards/scrum-master?projectId=${projectId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                console.log('🎯 Scrum master response:', response.status, response.statusText);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('🎯 Scrum master data:', data);
+                } else {
+                    const errorText = await response.text();
+                    console.error('🎯 Scrum master error:', errorText);
+                }
+            } catch (e) {
+                console.error('❌ Scrum master error:', e);
+            }
+        }
+        
+        // Run tests when page loads
+        testAPIs();
+    </script>
+</body>
+</html>

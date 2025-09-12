@@ -16,6 +16,15 @@ API_DOCUMENTATION.md
 .claude
 .DataLoader
 
+### Test Files ###
+**/test/**
+src/test/
+test/
+*.test.js
+*.test.java
+*Test.java
+*Tests.java
+
 ### IntelliJ IDEA ###
 .idea
 *.iws
