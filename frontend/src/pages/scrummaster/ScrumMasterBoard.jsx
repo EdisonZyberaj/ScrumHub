@@ -300,13 +300,21 @@ function ScrumMasterBoard() {
 				// Fetch board data from backend
 				let boardData = { scrum: null, testing: null };
 				
+				// Fetch board data - prefer sprint data, fallback to project data
+				let boardResponse;
 				if (sprintData) {
-					// Fetch scrum master board data
-					const boardResponse = await fetch(`http://localhost:8080/api/boards/scrum-master?sprintId=${sprintData.id}`, {
+					// Fetch scrum master board data by sprint
+					boardResponse = await fetch(`http://localhost:8080/api/boards/scrum-master?sprintId=${sprintData.id}`, {
 						headers: { 'Authorization': `Bearer ${token}` }
 					});
-					
-					if (boardResponse.ok) {
+				} else {
+					// Fallback: fetch board data by project ID
+					boardResponse = await fetch(`http://localhost:8080/api/boards/project/${projectId}/tasks-by-status`, {
+						headers: { 'Authorization': `Bearer ${token}` }
+					});
+				}
+				
+				if (boardResponse.ok) {
 						const boardApiData = await boardResponse.json();
 						
 						// Process tasks to the expected format
@@ -337,27 +345,37 @@ function ScrumMasterBoard() {
 							return taskIds;
 						};
 						
+						// Handle different response formats
+						let tasksByStatus;
+						if (sprintData && boardApiData.tasksByStatus) {
+							// Sprint-based response format
+							tasksByStatus = boardApiData.tasksByStatus;
+						} else {
+							// Project-based response format (already grouped by status)
+							tasksByStatus = boardApiData;
+						}
+						
 						// Scrum Board Columns with real data
 						const scrumColumns = {
 							todo: {
 								id: "todo",
 								title: "To Do",
-								taskIds: processTasksForColumn(boardApiData.tasksByStatus?.TO_DO || [], 'todo')
+								taskIds: processTasksForColumn(tasksByStatus?.TO_DO || [], 'todo')
 							},
 							inProgress: {
 								id: "inProgress", 
 								title: "In Progress",
-								taskIds: processTasksForColumn(boardApiData.tasksByStatus?.IN_PROGRESS || [], 'inProgress')
+								taskIds: processTasksForColumn(tasksByStatus?.IN_PROGRESS || [], 'inProgress')
 							},
 							review: {
 								id: "review",
 								title: "In Review", 
-								taskIds: processTasksForColumn(boardApiData.tasksByStatus?.READY_FOR_TESTING || [], 'review')
+								taskIds: processTasksForColumn(tasksByStatus?.READY_FOR_TESTING || [], 'review')
 							},
 							done: {
 								id: "done",
 								title: "Done",
-								taskIds: processTasksForColumn(boardApiData.tasksByStatus?.DONE || [], 'done')
+								taskIds: processTasksForColumn(tasksByStatus?.DONE || [], 'done')
 							}
 						};
 						
@@ -366,22 +384,22 @@ function ScrumMasterBoard() {
 							readyForTesting: {
 								id: "readyForTesting",
 								title: "Ready for Testing",
-								taskIds: processTasksForColumn(boardApiData.tasksByStatus?.READY_FOR_TESTING || [], 'readyForTesting')
+								taskIds: processTasksForColumn(tasksByStatus?.READY_FOR_TESTING || [], 'readyForTesting')
 							},
 							inTesting: {
 								id: "inTesting", 
 								title: "In Testing",
-								taskIds: processTasksForColumn(boardApiData.tasksByStatus?.IN_TESTING || [], 'inTesting')
+								taskIds: processTasksForColumn(tasksByStatus?.IN_TESTING || [], 'inTesting')
 							},
 							bugFound: {
 								id: "bugFound",
 								title: "Bug Found",
-								taskIds: processTasksForColumn(boardApiData.tasksByStatus?.BUG_FOUND || [], 'bugFound')
+								taskIds: processTasksForColumn(tasksByStatus?.BUG_FOUND || [], 'bugFound')
 							},
 							testPassed: {
 								id: "testPassed",
 								title: "Test Passed",
-								taskIds: processTasksForColumn(boardApiData.tasksByStatus?.TEST_PASSED || [], 'testPassed')
+								taskIds: processTasksForColumn(tasksByStatus?.TEST_PASSED || [], 'testPassed')
 							}
 						};
 						
@@ -398,7 +416,6 @@ function ScrumMasterBoard() {
 							}
 						};
 					}
-				}
 
 				// Set state with real data
 				setActiveSprint(sprintData);

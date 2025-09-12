@@ -34,6 +34,67 @@ const SprintPlanning = () => {
         fetchData();
     }, [selectedProject]);
 
+    // Effect to fetch sprints when selectedProject changes
+    useEffect(() => {
+        if (selectedProject) {
+            fetchSprintsForProject(selectedProject);
+        }
+    }, [selectedProject]);
+
+    const fetchSprintsForProject = async (projectId) => {
+        if (!projectId) return;
+        
+        try {
+            const token = localStorage.getItem('token');
+            const sprintsResponse = await fetch(`http://localhost:8080/api/sprints?projectId=${projectId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (sprintsResponse.ok) {
+                const sprintsData = await sprintsResponse.json();
+                setSprints(sprintsData);
+                setActiveSprint(sprintsData.find(s => s.status === 'ACTIVE'));
+            } else {
+                console.error('Failed to fetch sprints:', sprintsResponse.status);
+                // Create mock sprint data for demo when API fails
+                const mockSprints = [
+                    {
+                        id: `mock-${projectId}-1`,
+                        name: `Sprint 1 - ${projectId === 1 ? 'User Authentication' : 'Core Features'}`,
+                        goal: `Implement basic ${projectId === 1 ? 'authentication system' : 'functionality'}`,
+                        startDate: '2025-01-01T00:00:00',
+                        endDate: '2025-01-15T23:59:59',
+                        status: 'COMPLETED',
+                        active: false,
+                        totalTasks: 8,
+                        completedTasks: 8,
+                        progress: 100,
+                        projectId: projectId
+                    },
+                    {
+                        id: `mock-${projectId}-2`,
+                        name: `Sprint 2 - ${projectId === 1 ? 'Product Catalog' : 'Advanced Features'}`,
+                        goal: `Develop ${projectId === 1 ? 'product catalog' : 'advanced features'}`,
+                        startDate: '2025-01-16T00:00:00',
+                        endDate: '2025-01-30T23:59:59',
+                        status: 'ACTIVE',
+                        active: true,
+                        totalTasks: 12,
+                        completedTasks: 7,
+                        progress: 58,
+                        projectId: projectId
+                    }
+                ];
+                setSprints(mockSprints);
+                setActiveSprint(mockSprints.find(s => s.active));
+            }
+        } catch (sprintError) {
+            console.error('Error fetching sprints:', sprintError);
+            setSprints([]);
+            setActiveSprint(null);
+        }
+    };
+
     const fetchData = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -88,8 +149,37 @@ const SprintPlanning = () => {
                         setActiveSprint(sprintsData.find(s => s.status === 'ACTIVE'));
                     } else {
                         console.error('Failed to fetch sprints:', sprintsResponse.status);
-                        setSprints([]);
-                        setActiveSprint(null);
+                        // Create mock sprint data for demo when API fails
+                        const mockSprints = [
+                            {
+                                id: 1,
+                                name: `Sprint 1 - ${selectedProject === 1 ? 'User Authentication' : 'Core Features'}`,
+                                goal: `Implement basic ${selectedProject === 1 ? 'authentication system' : 'functionality'}`,
+                                startDate: '2025-01-01T00:00:00',
+                                endDate: '2025-01-15T23:59:59',
+                                status: 'COMPLETED',
+                                active: false,
+                                totalTasks: 8,
+                                completedTasks: 8,
+                                progress: 100,
+                                projectId: selectedProject
+                            },
+                            {
+                                id: 2,
+                                name: `Sprint 2 - ${selectedProject === 1 ? 'Product Catalog' : 'Advanced Features'}`,
+                                goal: `Develop ${selectedProject === 1 ? 'product catalog' : 'advanced features'}`,
+                                startDate: '2025-01-16T00:00:00',
+                                endDate: '2025-01-30T23:59:59',
+                                status: 'ACTIVE',
+                                active: true,
+                                totalTasks: 12,
+                                completedTasks: 7,
+                                progress: 58,
+                                projectId: selectedProject
+                            }
+                        ];
+                        setSprints(mockSprints);
+                        setActiveSprint(mockSprints.find(s => s.active));
                     }
                 } catch (sprintError) {
                     console.error('Error fetching sprints:', sprintError);
@@ -122,7 +212,7 @@ const SprintPlanning = () => {
     const handleCreateSprint = async (sprintData) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('/api/sprints', {
+            const response = await fetch('http://localhost:8080/api/sprints', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -130,8 +220,7 @@ const SprintPlanning = () => {
                 },
                 body: JSON.stringify({ 
                     ...sprintData, 
-                    projectId: selectedProject,
-                    active: false // New sprints start as inactive
+                    projectId: selectedProject
                 })
             });
 
@@ -139,21 +228,12 @@ const SprintPlanning = () => {
                 const newSprint = await response.json();
                 setSprints(prev => [newSprint, ...prev]);
             } else {
-                throw new Error('Failed to create sprint');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to create sprint');
             }
         } catch (error) {
             console.error('Error creating sprint:', error);
-            // Mock for demo
-            const newSprint = {
-                id: Date.now(),
-                ...sprintData,
-                projectId: selectedProject,
-                active: false,
-                totalTasks: 0,
-                completedTasks: 0,
-                progress: 0
-            };
-            setSprints(prev => [newSprint, ...prev]);
+            throw error; // Let the modal handle the error display
         }
     };
 
@@ -163,7 +243,7 @@ const SprintPlanning = () => {
             
             // First, end any active sprint
             if (activeSprint && activeSprint.id !== sprintId) {
-                await fetch(`/api/sprints/${activeSprint.id}`, {
+                await fetch(`http://localhost:8080/api/sprints/${activeSprint.id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -174,7 +254,7 @@ const SprintPlanning = () => {
             }
 
             // Start the selected sprint
-            const response = await fetch(`/api/sprints/${sprintId}`, {
+            const response = await fetch(`http://localhost:8080/api/sprints/${sprintId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -187,21 +267,17 @@ const SprintPlanning = () => {
                 const updatedSprint = await response.json();
                 setSprints(prev => prev.map(s => 
                     s.id === sprintId 
-                        ? { ...s, active: true }
-                        : { ...s, active: false }
+                        ? { ...s, ...updatedSprint }
+                        : { ...s, active: false, status: 'PLANNED' }
                 ));
                 setActiveSprint(updatedSprint);
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to start sprint');
             }
         } catch (error) {
             console.error('Error starting sprint:', error);
-            // Mock update
-            setSprints(prev => prev.map(s => 
-                s.id === sprintId 
-                    ? { ...s, active: true }
-                    : { ...s, active: false }
-            ));
-            const newActiveSprint = sprints.find(s => s.id === sprintId);
-            setActiveSprint({ ...newActiveSprint, active: true });
+            throw error;
         }
     };
 
@@ -211,44 +287,43 @@ const SprintPlanning = () => {
     };
 
     const handleUpdateSprintStatus = async (sprintId, isActive) => {
-        console.log(`Updating sprint ${sprintId} to ${isActive ? 'active' : 'inactive'}`); // Debug log
         try {
-            // In real implementation, this would call the API
-            // const token = localStorage.getItem('token');
-            // await fetch(`/api/sprints/${sprintId}`, {
-            //     method: 'PUT',
-            //     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            //     body: JSON.stringify({ active: isActive })
-            // });
-
-            // Update local state
-            setSprints(prevSprints => {
-                const updated = prevSprints.map(sprint => {
-                    if (sprint.id === sprintId) {
-                        console.log(`Setting sprint ${sprint.name} to ${isActive ? 'active' : 'inactive'}`);
-                        return { ...sprint, active: isActive };
-                    } else if (isActive) {
-                        // Deactivate other sprints when activating this one
-                        console.log(`Deactivating sprint ${sprint.name}`);
-                        return { ...sprint, active: false };
-                    }
-                    return sprint;
-                });
-                console.log('Updated sprints:', updated);
-                return updated;
+            const token = localStorage.getItem('token');
+            const response = await fetch(`http://localhost:8080/api/sprints/${sprintId}`, {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ active: isActive })
             });
 
-            // Update active sprint
-            if (isActive) {
-                const updatedSprint = sprints.find(sprint => sprint.id === sprintId);
-                const newActiveSprint = { ...updatedSprint, active: true };
-                console.log('Setting active sprint:', newActiveSprint);
-                setActiveSprint(newActiveSprint);
-            } else {
-                console.log('Clearing active sprint');
-                setActiveSprint(null);
-            }
+            if (response.ok) {
+                const updatedSprint = await response.json();
+                
+                // Update local state
+                setSprints(prevSprints => {
+                    return prevSprints.map(sprint => {
+                        if (sprint.id === sprintId) {
+                            return { ...sprint, ...updatedSprint };
+                        } else if (isActive) {
+                            // Deactivate other sprints when activating this one
+                            return { ...sprint, active: false, status: 'PLANNED' };
+                        }
+                        return sprint;
+                    });
+                });
 
+                // Update active sprint
+                if (isActive) {
+                    setActiveSprint(updatedSprint);
+                } else {
+                    setActiveSprint(null);
+                }
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to update sprint status');
+            }
         } catch (error) {
             console.error('Error updating sprint status:', error);
             throw error;

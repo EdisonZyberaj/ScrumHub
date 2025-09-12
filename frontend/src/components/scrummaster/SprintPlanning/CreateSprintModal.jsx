@@ -84,8 +84,8 @@ const CreateSprintModal = ({ isOpen, onClose, onSubmit, projects, selectedProjec
             const sprintData = {
                 name: formData.name.trim(),
                 goal: formData.goal.trim(),
-                startDate: formData.startDate,
-                endDate: formData.endDate
+                startDate: new Date(formData.startDate).toISOString(),
+                endDate: new Date(formData.endDate).toISOString()
             };
 
             await onSubmit(sprintData);

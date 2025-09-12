@@ -80,9 +80,9 @@ function Register() {
 			});
 
 			const response = await axios.post(
-				"/api/auth/register",
+				"http://localhost:8080/api/auth/register",
 				{
-					name: formData.name,
+					firstName: formData.name,
 					lastName: formData.lastName,
 					email: formData.email,
 					password: formData.password,
