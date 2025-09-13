@@ -75,42 +75,32 @@ public class BoardService {
     public Map<String, Object> getScrumMasterBoard(Long projectId, Long sprintId) {
         List<Task> tasks;
         
-        try {
-            if (sprintId != null) {
-                tasks = new ArrayList<>(taskRepository.findBySprintIdOrderByPriorityDesc(sprintId));
-            } else if (projectId != null) {
-                tasks = new ArrayList<>(taskRepository.findByProjectIdOrderByCreatedAtDesc(projectId));
-            } else {
-                tasks = new ArrayList<>();
-            }
-
-            Map<String, Object> boardData = new HashMap<>();
-            
-            // Group tasks by status
-            Map<String, List<TaskResponseDto>> tasksByStatus = groupTasksByStatus(tasks);
-            boardData.put("tasksByStatus", tasksByStatus);
-            
-            // Group tasks by assignee
-            Map<String, List<TaskResponseDto>> tasksByAssignee = groupTasksByAssignee(tasks);
-            boardData.put("tasksByAssignee", tasksByAssignee);
-            
-            // Add summary statistics
-            Map<String, Integer> stats = new HashMap<>();
-            stats.put("totalTasks", tasks.size());
-            stats.put("completedTasks", (int) tasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.DONE).count());
-            stats.put("inProgressTasks", (int) tasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.IN_PROGRESS).count());
-            stats.put("unassignedTasks", (int) tasks.stream().filter(t -> t.getAssignee() == null).count());
-            boardData.put("stats", stats);
-            
-            return boardData;
-        } catch (Exception e) {
-            // Return empty board data if there's an error
-            Map<String, Object> emptyBoardData = new HashMap<>();
-            emptyBoardData.put("tasksByStatus", new HashMap<>());
-            emptyBoardData.put("tasksByAssignee", new HashMap<>());
-            emptyBoardData.put("stats", new HashMap<>());
-            return emptyBoardData;
+        if (sprintId != null) {
+            tasks = new ArrayList<>(taskRepository.findBySprintIdOrderByPriorityDesc(sprintId));
+        } else if (projectId != null) {
+            tasks = new ArrayList<>(taskRepository.findByProjectIdOrderByCreatedAtDesc(projectId));
+        } else {
+            tasks = new ArrayList<>();
         }
+
+        Map<String, Object> boardData = new HashMap<>();
+        
+        // Group tasks by status
+        Map<String, List<TaskResponseDto>> tasksByStatus = groupTasksByStatus(tasks);
+        boardData.put("tasksByStatus", tasksByStatus);
+        
+        // Skip tasksByAssignee for now to avoid Hibernate issues
+        boardData.put("tasksByAssignee", new HashMap<>());
+        
+        // Add summary statistics
+        Map<String, Integer> stats = new HashMap<>();
+        stats.put("totalTasks", tasks.size());
+        stats.put("completedTasks", (int) tasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.DONE).count());
+        stats.put("inProgressTasks", (int) tasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.IN_PROGRESS).count());
+        stats.put("unassignedTasks", (int) tasks.stream().filter(t -> t.getAssignee() == null).count());
+        boardData.put("stats", stats);
+        
+        return boardData;
     }
 
     public Map<String, List<TaskResponseDto>> getTasksByStatusForProject(Long projectId) {

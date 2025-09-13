@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import {
 	Calendar,
 	ChevronRight,
@@ -8,171 +7,65 @@ import {
 	Clock,
 	AlertTriangle,
 	Users,
-	BarChart3
+	BarChart3,
+	TrendingUp,
+	Target,
+	TestTube,
+	Zap,
+	Activity,
+	RefreshCw
 } from "lucide-react";
 import Navbar from "../components/shared/Navbar";
 import Footer from "../components/shared/Footer";
 import BurndownChart from "../components/common/BurndownChart";
+import StatsCard from "../components/dashboard/StatsCard";
+import ProjectCard from "../components/dashboard/ProjectCard";
+import TasksOverview from "../components/dashboard/TasksOverview";
+import DashboardCharts from "../components/dashboard/DashboardCharts";
+import dashboardApi from "../services/dashboardApi";
 
 function Dashboard() {
-	const [user, setUser] = useState(null);
-	const [projects, setProjects] = useState([]);
-	const [tasks, setTasks] = useState([]);
+	const [dashboardData, setDashboardData] = useState({
+		user: null,
+		projects: [],
+		tasks: [],
+		stats: {}
+	});
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState(null);
+	const [lastUpdated, setLastUpdated] = useState(new Date());
+
+	const fetchDashboardData = async () => {
+		try {
+			setIsLoading(true);
+			setError(null);
+			
+			const data = await dashboardApi.getDashboardOverview();
+			setDashboardData(data);
+			setLastUpdated(new Date());
+		} catch (err) {
+			console.error("Error fetching dashboard data:", err);
+			setError("Failed to load dashboard data");
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	useEffect(() => {
-		const fetchDashboardData = async () => {
-			const token = localStorage.getItem("token");
-			if (!token) {
-				setError("Not authenticated");
-				setIsLoading(false);
-				return;
-			}
-
-			try {
-				const userResponse = await axios.get(
-					"http://localhost:8080/api/user/profile",
-					{
-						headers: { Authorization: `Bearer ${token}` }
-					}
-				);
-				setUser(userResponse.data);
-
-				setProjects([
-					{
-						id: 1,
-						name: "E-commerce Platform",
-						progress: 65,
-						status: "In Progress",
-						members: 8
-					},
-					{
-						id: 2,
-						name: "Mobile Banking App",
-						progress: 32,
-						status: "In Progress",
-						members: 6
-					},
-					{
-						id: 3,
-						name: "Internal HR Portal",
-						progress: 89,
-						status: "Testing",
-						members: 4
-					},
-					{
-						id: 4,
-						name: "Customer Support System",
-						progress: 100,
-						status: "Completed",
-						members: 5
-					}
-				]);
-
-				setTasks([
-					{
-						id: 1,
-						title: "Implement user authentication",
-						priority: "High",
-						status: "In Progress",
-						dueDate: "2025-05-20"
-					},
-					{
-						id: 2,
-						title: "Fix navigation bug on mobile",
-						priority: "Critical",
-						status: "To Do",
-						dueDate: "2025-05-18"
-					},
-					{
-						id: 3,
-						title: "Create API documentation",
-						priority: "Medium",
-						status: "In Progress",
-						dueDate: "2025-05-25"
-					},
-					{
-						id: 4,
-						title: "Design landing page",
-						priority: "Medium",
-						status: "To Do",
-						dueDate: "2025-05-22"
-					},
-					{
-						id: 5,
-						title: "Unit testing for cart module",
-						priority: "High",
-						status: "In Review",
-						dueDate: "2025-05-19"
-					}
-				]);
-
-				setIsLoading(false);
-			} catch (err) {
-				console.error("Error fetching dashboard data:", err);
-				setError("Failed to load dashboard data");
-				setIsLoading(false);
-			}
-		};
-
 		fetchDashboardData();
+
+		// Auto-refresh every 5 minutes
+		const interval = setInterval(fetchDashboardData, 5 * 60 * 1000);
+		return () => clearInterval(interval);
 	}, []);
 
-	const getStatusColor = status => {
-		switch (status.toLowerCase()) {
-			case "completed":
-				return "bg-green-100 text-green-800";
-			case "in progress":
-				return "bg-blue-100 text-blue-800";
-			case "testing":
-				return "bg-purple-100 text-purple-800";
-			default:
-				return "bg-gray-100 text-gray-800";
-		}
-	};
+	const { user, projects, tasks, stats } = dashboardData;
 
-	const getPriorityColor = priority => {
-		switch (priority.toLowerCase()) {
-			case "critical":
-				return "text-red-600";
-			case "high":
-				return "text-orange-500";
-			case "medium":
-				return "text-blue-500";
-			case "low":
-				return "text-green-500";
-			default:
-				return "text-gray-500";
-		}
-	};
-
-	const getTaskStatusColor = status => {
-		switch (status.toLowerCase()) {
-			case "completed":
-				return "bg-green-100 text-green-800";
-			case "in progress":
-				return "bg-blue-100 text-blue-800";
-			case "in review":
-				return "bg-yellow-100 text-yellow-800";
-			case "to do":
-				return "bg-gray-100 text-gray-800";
-			default:
-				return "bg-gray-100 text-gray-800";
-		}
-	};
-
-	const formatDate = dateString => {
-		const options = { year: "numeric", month: "short", day: "numeric" };
-		return new Date(dateString).toLocaleDateString("en-US", options);
-	};
-
-	const calculateDaysLeft = dueDate => {
-		const today = new Date();
-		const due = new Date(dueDate);
-		const diffTime = due - today;
-		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-		return diffDays;
+	const formatLastUpdated = () => {
+		return lastUpdated.toLocaleTimeString('en-US', {
+			hour: '2-digit',
+			minute: '2-digit'
+		});
 	};
 
 	if (isLoading) {
@@ -217,117 +110,118 @@ function Dashboard() {
 			<Navbar />
 
 			<main className="flex-grow container mx-auto px-4 py-8">
-				{user &&
-					<div className="mb-8">
-						<h1 className="text-3xl font-bold text-gray-800">
-							Welcome, {user.fullName}!
-						</h1>
-						<p className="text-gray-600">
-							Here's what's happening with your projects today.
-						</p>
-					</div>}
-
-				{/* Dashboard Overview Cards */}
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-					<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-						<div className="flex items-center justify-between mb-4">
-							<h3 className="text-gray-500 font-medium">Total Projects</h3>
-							<span className="p-2 bg-blue-50 rounded-lg">
-								<BarChart3 className="h-5 w-5 text-blue-500" />
-							</span>
-						</div>
-						<p className="text-3xl font-bold text-gray-800">
-							{projects.length}
-						</p>
-						<div className="flex items-center mt-2 text-sm text-green-600">
-							<span className="flex items-center">
-								<CheckCircle2 className="h-4 w-4 mr-1" />
-								{projects.filter(p => p.status === "Completed").length}{" "}
-								completed
-							</span>
-						</div>
+				{/* Header with refresh option */}
+				<div className="flex items-center justify-between mb-8">
+					<div>
+						{user && (
+							<>
+								<h1 className="text-3xl font-bold text-gray-800">
+									Welcome back, {user.fullName}!
+								</h1>
+								<p className="text-gray-600 mt-1">
+									Here's your Scrum Master dashboard overview
+								</p>
+							</>
+						)}
 					</div>
-
-					<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-						<div className="flex items-center justify-between mb-4">
-							<h3 className="text-gray-500 font-medium">Open Tasks</h3>
-							<span className="p-2 bg-yellow-50 rounded-lg">
-								<Clock className="h-5 w-5 text-yellow-500" />
-							</span>
+					<div className="flex items-center space-x-4">
+						<div className="flex items-center text-sm text-gray-500">
+							<Activity className="h-4 w-4 mr-1" />
+							<span>Last updated: {formatLastUpdated()}</span>
 						</div>
-						<p className="text-3xl font-bold text-gray-800">
-							{tasks.length}
-						</p>
-						<div className="flex items-center mt-2 text-sm text-orange-600">
-							<span className="flex items-center">
-								<AlertTriangle className="h-4 w-4 mr-1" />
-								{
-									tasks.filter(
-										task =>
-											task.priority === "Critical" || task.priority === "High"
-									).length
-								}{" "}
-								high priority
-							</span>
-						</div>
-					</div>
-
-					<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-						<div className="flex items-center justify-between mb-4">
-							<h3 className="text-gray-500 font-medium">Upcoming Deadlines</h3>
-							<span className="p-2 bg-red-50 rounded-lg">
-								<Calendar className="h-5 w-5 text-red-500" />
-							</span>
-						</div>
-						<p className="text-3xl font-bold text-gray-800">
-							{
-								tasks.filter(
-									task =>
-										calculateDaysLeft(task.dueDate) <= 3 &&
-										task.status !== "Completed"
-								).length
-							}
-						</p>
-						<div className="flex items-center mt-2 text-sm text-red-600">
-							<span className="flex items-center">
-								<AlertTriangle className="h-4 w-4 mr-1" />
-								{
-									tasks.filter(
-										task =>
-											calculateDaysLeft(task.dueDate) <= 1 &&
-											task.status !== "Completed"
-									).length
-								}{" "}
-								due today/tomorrow
-							</span>
-						</div>
-					</div>
-
-					<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-						<div className="flex items-center justify-between mb-4">
-							<h3 className="text-gray-500 font-medium">Team Members</h3>
-							<span className="p-2 bg-purple-50 rounded-lg">
-								<Users className="h-5 w-5 text-purple-500" />
-							</span>
-						</div>
-						<p className="text-3xl font-bold text-gray-800">
-							{projects.reduce((sum, project) => sum + project.members, 0)}
-						</p>
-						<div className="flex items-center mt-2 text-sm text-purple-600">
-							<span className="flex items-center">
-								<CheckCircle2 className="h-4 w-4 mr-1" />
-								Across {projects.length} projects
-							</span>
-						</div>
+						<button
+							onClick={fetchDashboardData}
+							disabled={isLoading}
+							className="flex items-center px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+						>
+							<RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+							Refresh
+						</button>
 					</div>
 				</div>
 
-				{/* Add Burndown Chart Section here */}
+				{/* Stats Cards */}
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+					<StatsCard
+						title="Total Projects"
+						value={stats.projects?.total || 0}
+						subtitle={`${stats.projects?.completed || 0} completed`}
+						icon={BarChart3}
+						color="blue"
+						trend="up"
+						trendValue={`${stats.projects?.completionRate || 0}%`}
+					/>
+					<StatsCard
+						title="Total Tasks"
+						value={stats.tasks?.total || 0}
+						subtitle={`${stats.tasks?.highPriority || 0} high priority`}
+						icon={Target}
+						color="purple"
+						trend="neutral"
+						trendValue={`${stats.tasks?.completionRate || 0}% done`}
+					/>
+					<StatsCard
+						title="Upcoming Deadlines"
+						value={stats.deadlines?.upcoming || 0}
+						subtitle={`${stats.deadlines?.dueTodayTomorrow || 0} due soon`}
+						icon={Calendar}
+						color="red"
+						trend={stats.deadlines?.dueTodayTomorrow > 0 ? "up" : "neutral"}
+						trendValue={stats.deadlines?.dueTodayTomorrow > 0 ? "urgent" : "on track"}
+					/>
+					<StatsCard
+						title="Team Members"
+						value={stats.team?.totalMembers || 0}
+						subtitle={`across ${projects.length} projects`}
+						icon={Users}
+						color="green"
+						trend="neutral"
+						trendValue={`${stats.team?.projectsPerMember || 0} avg per member`}
+					/>
+				</div>
+
+				{/* Additional Stats Row */}
+				<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+					<StatsCard
+						title="Tasks in Progress"
+						value={stats.tasks?.inProgress || 0}
+						subtitle="currently active"
+						icon={Zap}
+						color="yellow"
+						trend="neutral"
+					/>
+					<StatsCard
+						title="Testing Phase"
+						value={stats.testing?.inTesting || 0}
+						subtitle={`${stats.testing?.bugsFound || 0} bugs found`}
+						icon={TestTube}
+						color="indigo"
+						trend={stats.testing?.bugsFound > 0 ? "down" : "up"}
+						trendValue={stats.testing?.bugsFound > 0 ? "needs attention" : "looking good"}
+					/>
+					<StatsCard
+						title="Completion Rate"
+						value={`${stats.tasks?.completionRate || 0}%`}
+						subtitle="overall progress"
+						icon={CheckCircle2}
+						color="green"
+						trend={parseFloat(stats.tasks?.completionRate || 0) > 70 ? "up" : "neutral"}
+						trendValue={parseFloat(stats.tasks?.completionRate || 0) > 70 ? "excellent" : "improving"}
+					/>
+				</div>
+
+				{/* Charts Section */}
 				<div className="mb-10">
 					<div className="flex justify-between items-center mb-6">
-						<h2 className="text-2xl font-bold text-gray-800">
-							Sprint Progress
-						</h2>
+						<h2 className="text-2xl font-bold text-gray-800">Analytics Overview</h2>
+					</div>
+					<DashboardCharts projects={projects} tasks={tasks} stats={stats} />
+				</div>
+
+				{/* Burndown Chart */}
+				<div className="mb-10">
+					<div className="flex justify-between items-center mb-6">
+						<h2 className="text-2xl font-bold text-gray-800">Sprint Progress</h2>
 						<div className="flex items-center text-sm text-gray-500">
 							<Calendar className="h-4 w-4 mr-1" />
 							<span>Current Sprint</span>
@@ -338,157 +232,52 @@ function Dashboard() {
 					</div>
 				</div>
 
-				{/* Projects Section */}
+				{/* Projects Grid */}
 				<div className="mb-10">
 					<div className="flex justify-between items-center mb-6">
-						<h2 className="text-2xl font-bold text-gray-800">Projects</h2>
+						<h2 className="text-2xl font-bold text-gray-800">Your Projects</h2>
 						<Link
-							to="/projects"
-							className="text-primary hover:text-hoverBlue flex items-center">
+							to="/scrummaster/projects"
+							className="text-primary hover:text-blue-600 flex items-center font-medium"
+						>
 							View All <ChevronRight className="h-4 w-4 ml-1" />
 						</Link>
 					</div>
 
-					<div className="bg-white rounded-xl shadow-sm overflow-hidden">
-						<div className="overflow-x-auto">
-							<table className="min-w-full">
-								<thead className="bg-gray-50 border-b border-gray-100">
-									<tr>
-										<th className="text-left py-4 px-6 text-sm font-medium text-gray-500">
-											Project Name
-										</th>
-										<th className="text-left py-4 px-6 text-sm font-medium text-gray-500">
-											Progress
-										</th>
-										<th className="text-left py-4 px-6 text-sm font-medium text-gray-500">
-											Status
-										</th>
-										<th className="text-left py-4 px-6 text-sm font-medium text-gray-500">
-											Team
-										</th>
-										<th className="text-left py-4 px-6 text-sm font-medium text-gray-500">
-											Actions
-										</th>
-									</tr>
-								</thead>
-								<tbody className="divide-y divide-gray-100">
-									{projects.map(project =>
-										<tr key={project.id} className="hover:bg-gray-50">
-											<td className="py-4 px-6">
-												<div className="font-medium text-gray-900">
-													{project.name}
-												</div>
-											</td>
-											<td className="py-4 px-6">
-												<div className="w-full bg-gray-200 rounded-full h-2.5 mb-1">
-													<div
-														className="bg-primary h-2.5 rounded-full"
-														style={{ width: `${project.progress}%` }}
-													/>
-												</div>
-												<div className="text-xs text-gray-500">
-													{project.progress}% completed
-												</div>
-											</td>
-											<td className="py-4 px-6">
-												<span
-													className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(
-														project.status
-													)}`}>
-													{project.status}
-												</span>
-											</td>
-											<td className="py-4 px-6">
-												<div className="flex items-center">
-													<div className="flex -space-x-2 mr-2">
-														{[
-															...Array(Math.min(3, project.members))
-														].map((_, i) =>
-															<div
-																key={i}
-																className="w-8 h-8 rounded-full bg-gray-300 border-2 border-white flex items-center justify-center text-xs font-medium text-gray-600">
-																{String.fromCharCode(65 + i)}
-															</div>
-														)}
-													</div>
-													{project.members > 3 &&
-														<span className="text-xs text-gray-500">
-															+{project.members - 3} more
-														</span>}
-												</div>
-											</td>
-											<td className="py-4 px-6">
-												<Link
-													to={`/projects/${project.id}`}
-													className="text-primary hover:text-hoverBlue font-medium">
-													View
-												</Link>
-											</td>
-										</tr>
-									)}
-								</tbody>
-							</table>
+					{projects.length > 0 ? (
+						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+							{projects.slice(0, 6).map((project) => (
+								<ProjectCard key={project.id} project={project} />
+							))}
 						</div>
-					</div>
+					) : (
+						<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+							<BarChart3 className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+							<h3 className="text-lg font-medium text-gray-900 mb-2">No Projects Yet</h3>
+							<p className="text-gray-500 mb-4">Create your first project to get started</p>
+							<Link
+								to="/scrummaster/projects"
+								className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors"
+							>
+								<BarChart3 className="h-4 w-4 mr-2" />
+								Create Project
+							</Link>
+						</div>
+					)}
 				</div>
 
-				{/* Tasks Section */}
+				{/* Recent Tasks */}
 				<div>
 					<div className="flex justify-between items-center mb-6">
-						<h2 className="text-2xl font-bold text-gray-800">Your Tasks</h2>
+						<h2 className="text-2xl font-bold text-gray-800">Recent Tasks</h2>
 						<Link
-							to="/tasks"
-							className="text-primary hover:text-hoverBlue flex items-center">
+							to="/scrummaster/task-assignment"
+							className="text-primary hover:text-blue-600 flex items-center font-medium"
+						>
 							View All <ChevronRight className="h-4 w-4 ml-1" />
 						</Link>
 					</div>
-
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-						{tasks.slice(0, 6).map(task =>
-							<div
-								key={task.id}
-								className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
-								<div className="flex justify-between items-start mb-3">
-									<h3 className="font-medium text-gray-900 pr-4">
-										{task.title}
-									</h3>
-									<span
-										className={`text-sm font-medium ${getPriorityColor(
-											task.priority
-										)}`}>
-										{task.priority}
-									</span>
-								</div>
-								<div className="flex items-center justify-between mb-4">
-									<span
-										className={`px-2.5 py-1 rounded-full text-xs font-medium ${getTaskStatusColor(
-											task.status
-										)}`}>
-										{task.status}
-									</span>
-									<div className="flex items-center text-sm text-gray-500">
-										<Calendar className="h-4 w-4 mr-1" />
-										<span>
-											{formatDate(task.dueDate)}
-										</span>
-									</div>
-								</div>
-								<div className="flex justify-between items-center">
-									<Link
-										to={`/tasks/${task.id}`}
-										className="text-primary hover:text-hoverBlue text-sm font-medium">
-										View details
-									</Link>
-									<div
-										className={`text-sm ${calculateDaysLeft(task.dueDate) <= 2
-											? "text-red-500"
-											: "text-gray-500"}`}>
-										{calculateDaysLeft(task.dueDate)} days left
-									</div>
-								</div>
-							</div>
-						)}
-					</div>
+					<TasksOverview tasks={tasks} limit={9} />
 				</div>
 			</main>
 

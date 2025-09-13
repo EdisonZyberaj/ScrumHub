@@ -39,7 +39,7 @@ public class TaskController {
             tasks = taskService.getTasksByAssigneeId(assigneeId);
         } else {
             return ResponseEntity.badRequest()
-                    .body(null); // At least one filter parameter is required
+                    .body(null);
         }
         
         return ResponseEntity.ok(tasks);

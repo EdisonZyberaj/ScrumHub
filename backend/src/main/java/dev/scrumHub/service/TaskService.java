@@ -56,7 +56,7 @@ public class TaskService {
         // Get current user from security context
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        User createdBy = userRepository.findByUsername(username)
+        User createdBy = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
 
         // Check if project exists
