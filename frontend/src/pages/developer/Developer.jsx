@@ -26,7 +26,9 @@ const Developer = () => {
     totalTasks: 0,
     completed: 0,
     inProgress: 0,
-    blocked: 0
+    blocked: 0,
+    toDo: 0,
+    readyForTesting: 0
   });
 
   // Filters for tasks view
@@ -98,14 +100,30 @@ const Developer = () => {
   const fetchUserTasks = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/tasks?assigneeId=${user.id}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
 
-      if (response.ok) {
-        const tasksData = await response.json();
+      // Use the new developer-specific endpoint
+      const [tasksResponse, statsResponse] = await Promise.all([
+        fetch('http://localhost:8080/api/developer/tasks', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch('http://localhost:8080/api/developer/dashboard/stats', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+      ]);
+
+      if (tasksResponse.ok) {
+        const tasksData = await tasksResponse.json();
         setTasks(tasksData);
-        calculateStats(tasksData);
+      }
+
+      if (statsResponse.ok) {
+        const statsData = await statsResponse.json();
+        setStats(statsData);
+      } else {
+        // Fallback to calculating stats from tasks
+        if (tasks.length > 0) {
+          calculateStats(tasks);
+        }
       }
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -115,7 +133,8 @@ const Developer = () => {
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/projects', {
+      // Fetch projects for the current user with statistics
+      const response = await fetch(`http://localhost:8080/api/projects?userId=${user.id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -176,7 +195,14 @@ const Developer = () => {
   const fetchSprintTasks = async (sprintId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/tasks?sprintId=${sprintId}&assigneeId=${user.id}`, {
+
+      // Use developer-specific API with sprint and project filters
+      let url = `http://localhost:8080/api/developer/tasks?sprintId=${sprintId}`;
+      if (projectId) {
+        url += `&projectId=${projectId}`;
+      }
+
+      const response = await fetch(url, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -184,22 +210,19 @@ const Developer = () => {
         const tasksData = await response.json();
         setTasks(tasksData);
       } else {
-        // If no tasks for this sprint, try to get all user tasks for this project
-        const projectResponse = await fetch(`http://localhost:8080/api/tasks?assigneeId=${user.id}`, {
+        // Fallback to get tasks by project only
+        const fallbackResponse = await fetch(`http://localhost:8080/api/developer/tasks?projectId=${projectId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (projectResponse.ok) {
-          const allTasks = await projectResponse.json();
-          // Filter tasks by project if we have projectId
-          const projectTasks = projectId ?
-            allTasks.filter(task => task.projectId?.toString() === projectId?.toString()) :
-            allTasks;
-          setTasks(projectTasks);
+        if (fallbackResponse.ok) {
+          const tasksData = await fallbackResponse.json();
+          setTasks(tasksData);
+        } else {
+          setTasks([]);
         }
       }
     } catch (error) {
       console.error('Error fetching sprint tasks:', error);
-      // Fallback to empty array
       setTasks([]);
     }
   };
@@ -209,7 +232,9 @@ const Developer = () => {
       totalTasks: tasksData.length,
       completed: tasksData.filter(t => t.status === 'DONE').length,
       inProgress: tasksData.filter(t => t.status === 'IN_PROGRESS').length,
-      blocked: tasksData.filter(t => t.status === 'BUG_FOUND').length
+      blocked: tasksData.filter(t => t.status === 'BUG_FOUND').length,
+      toDo: tasksData.filter(t => t.status === 'TO_DO').length,
+      readyForTesting: tasksData.filter(t => t.status === 'READY_FOR_TESTING').length
     };
     setStats(stats);
   };
@@ -242,7 +267,8 @@ const Developer = () => {
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/tasks/${taskId}/status`, {
+      // Use developer-specific endpoint which validates allowed transitions
+      const response = await fetch(`http://localhost:8080/api/developer/tasks/${taskId}/status`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -253,9 +279,13 @@ const Developer = () => {
 
       if (response.ok) {
         fetchData(); // Refresh data
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || 'Failed to update task status');
       }
     } catch (error) {
       console.error('Error updating task status:', error);
+      alert('Failed to update task status');
     }
   };
 
@@ -339,6 +369,7 @@ const Developer = () => {
             Here's your development workspace
           </p>
         </div>
+
 
         {renderContent()}
 

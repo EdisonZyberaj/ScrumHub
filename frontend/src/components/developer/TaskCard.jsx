@@ -41,12 +41,23 @@ const TaskCard = ({ task, showProject = true, onTaskClick, onUpdateStatus }) => 
       case 'TO_DO': return 'IN_PROGRESS';
       case 'IN_PROGRESS': return 'READY_FOR_TESTING';
       case 'BUG_FOUND': return 'IN_PROGRESS';
+      case 'READY_FOR_TESTING': return 'IN_PROGRESS'; // Allow pull back
       default: return null;
     }
   };
 
+  const getStatusActionText = (currentStatus, nextStatus) => {
+    switch (currentStatus) {
+      case 'TO_DO': return 'Start';
+      case 'IN_PROGRESS': return 'Ready for Testing';
+      case 'BUG_FOUND': return 'Fix & Resume';
+      case 'READY_FOR_TESTING': return 'Pull Back';
+      default: return 'Update';
+    }
+  };
+
   const nextStatus = getNextStatus(task.status);
-  const canAdvance = nextStatus && ['TO_DO', 'IN_PROGRESS', 'BUG_FOUND'].includes(task.status);
+  const canAdvance = nextStatus && ['TO_DO', 'IN_PROGRESS', 'BUG_FOUND', 'READY_FOR_TESTING'].includes(task.status);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
@@ -97,10 +108,14 @@ const TaskCard = ({ task, showProject = true, onTaskClick, onUpdateStatus }) => 
           {canAdvance && (
             <button
               onClick={() => onUpdateStatus(task.id, nextStatus)}
-              className="flex items-center space-x-1 px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
+              className={`flex items-center space-x-1 px-2 py-1 text-white text-xs rounded transition-colors ${
+                task.status === 'BUG_FOUND' ? 'bg-red-600 hover:bg-red-700' :
+                task.status === 'READY_FOR_TESTING' ? 'bg-yellow-600 hover:bg-yellow-700' :
+                'bg-blue-600 hover:bg-blue-700'
+              }`}
             >
               <Play className="w-3 h-3" />
-              <span>{nextStatus === 'IN_PROGRESS' ? 'Start' : 'Ready for Testing'}</span>
+              <span>{getStatusActionText(task.status, nextStatus)}</span>
             </button>
           )}
 

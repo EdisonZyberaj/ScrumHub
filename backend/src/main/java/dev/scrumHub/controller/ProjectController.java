@@ -24,12 +24,24 @@ public class ProjectController {
 
     @GetMapping
     public ResponseEntity<List<ProjectResponseDto>> getAllProjects(
-            @RequestParam(defaultValue = "true") boolean activeOnly) {
+            @RequestParam(defaultValue = "true") boolean activeOnly,
+            @RequestParam(required = false) Long userId) {
         List<ProjectResponseDto> projects;
-        if (activeOnly) {
-            projects = projectService.getAllActiveProjectsWithStats();
+
+        if (userId != null) {
+            // Get projects for specific user
+            if (activeOnly) {
+                projects = projectService.getActiveProjectsForUser(userId);
+            } else {
+                projects = projectService.getAllProjectsForUser(userId);
+            }
         } else {
-            projects = projectService.getAllProjectsWithStats();
+            // Get all projects
+            if (activeOnly) {
+                projects = projectService.getAllActiveProjectsWithStats();
+            } else {
+                projects = projectService.getAllProjectsWithStats();
+            }
         }
         return ResponseEntity.ok(projects);
     }

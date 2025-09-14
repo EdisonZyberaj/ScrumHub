@@ -43,7 +43,28 @@ const TaskModal = ({ showModal, task, onClose, onUpdateStatus }) => {
       case 'TO_DO': return 'IN_PROGRESS';
       case 'IN_PROGRESS': return 'READY_FOR_TESTING';
       case 'BUG_FOUND': return 'IN_PROGRESS';
+      case 'READY_FOR_TESTING': return 'IN_PROGRESS';
       default: return null;
+    }
+  };
+
+  const getStatusActionText = (currentStatus, nextStatus) => {
+    switch (currentStatus) {
+      case 'TO_DO': return 'Start Task';
+      case 'IN_PROGRESS': return 'Ready for Testing';
+      case 'BUG_FOUND': return 'Fix & Resume Development';
+      case 'READY_FOR_TESTING': return 'Pull Back to Development';
+      default: return 'Update Status';
+    }
+  };
+
+  const getAllowedTransitions = (currentStatus) => {
+    switch (currentStatus) {
+      case 'TO_DO': return ['IN_PROGRESS'];
+      case 'IN_PROGRESS': return ['TO_DO', 'READY_FOR_TESTING'];
+      case 'BUG_FOUND': return ['IN_PROGRESS'];
+      case 'READY_FOR_TESTING': return ['IN_PROGRESS'];
+      default: return [];
     }
   };
 
@@ -98,17 +119,29 @@ const TaskModal = ({ showModal, task, onClose, onUpdateStatus }) => {
             )}
           </div>
 
-          {getNextStatus(task.status) && (
-            <button
-              onClick={() => {
-                onUpdateStatus(task.id, getNextStatus(task.status));
-                onClose();
-              }}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              {getNextStatus(task.status) === 'IN_PROGRESS' ? 'Start Task' : 'Ready for Testing'}
-            </button>
-          )}
+          {/* Status Transition Buttons */}
+          <div className="space-y-3">
+            <h3 className="font-medium text-gray-900">Status Actions</h3>
+            <div className="flex flex-wrap gap-2">
+              {getAllowedTransitions(task.status).map((status) => (
+                <button
+                  key={status}
+                  onClick={() => {
+                    onUpdateStatus(task.id, status);
+                    onClose();
+                  }}
+                  className={`px-4 py-2 rounded-lg text-white text-sm transition-colors ${
+                    status === 'IN_PROGRESS' ? 'bg-blue-600 hover:bg-blue-700' :
+                    status === 'READY_FOR_TESTING' ? 'bg-green-600 hover:bg-green-700' :
+                    status === 'TO_DO' ? 'bg-gray-600 hover:bg-gray-700' :
+                    'bg-blue-600 hover:bg-blue-700'
+                  }`}
+                >
+                  {getStatusActionText(task.status, status)}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

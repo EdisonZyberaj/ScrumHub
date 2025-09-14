@@ -28,4 +28,5 @@ public class ProjectResponseDto {
     private int completedTasks;
     private int totalTasks;
     private String status; // active, completed, on-hold
+    private SprintResponseDto activeSprint;
 }

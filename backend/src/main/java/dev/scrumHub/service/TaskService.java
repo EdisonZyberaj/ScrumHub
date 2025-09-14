@@ -137,6 +137,47 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
+    public List<TaskResponseDto> getTasksBySprintIdAndAssigneeId(Long sprintId, Long assigneeId) {
+        List<Task> tasks = taskRepository.findBySprintIdAndAssigneeId(sprintId, assigneeId);
+        return tasks.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<TaskResponseDto> getTasksByProjectIdAndAssigneeId(Long projectId, Long assigneeId) {
+        List<Task> tasks = taskRepository.findByProjectIdAndAssigneeId(projectId, assigneeId);
+        return tasks.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<TaskResponseDto> getCurrentSprintTasksForUser(Long userId, Long projectId) {
+        // Find current active sprint for the project
+        Sprint currentSprint = null;
+        if (projectId != null) {
+            List<Sprint> activeSprints = sprintRepository.findByProjectIdAndStatusOrderByStartDateDesc(
+                projectId, Sprint.SprintStatus.ACTIVE);
+            if (!activeSprints.isEmpty()) {
+                currentSprint = activeSprints.get(0);
+            }
+        } else {
+            // If no project specified, find any active sprint with tasks for this user
+            List<Task> userTasks = taskRepository.findByAssigneeId(userId);
+            for (Task task : userTasks) {
+                if (task.getSprint() != null && task.getSprint().getStatus() == Sprint.SprintStatus.ACTIVE) {
+                    currentSprint = task.getSprint();
+                    break;
+                }
+            }
+        }
+
+        if (currentSprint != null) {
+            return getTasksBySprintIdAndAssigneeId(currentSprint.getId(), userId);
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
     public TaskResponseDto convertToDto(Task task) {
         UserResponseDto assigneeDto = null;
         if (task.getAssignee() != null) {

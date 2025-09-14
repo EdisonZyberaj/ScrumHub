@@ -6,12 +6,12 @@ const DeveloperDashboard = ({ stats, projects, tasks, onTaskClick, onUpdateStatu
   return (
     <div className="space-y-6">
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Tasks</p>
-              <p className="text-3xl font-bold text-gray-900">{stats.totalTasks}</p>
+              <p className="text-3xl font-bold text-gray-900">{stats.totalTasks || 0}</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <Target className="w-6 h-6 text-blue-600" />
@@ -22,11 +22,11 @@ const DeveloperDashboard = ({ stats, projects, tasks, onTaskClick, onUpdateStatu
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Completed</p>
-              <p className="text-3xl font-bold text-green-600">{stats.completed}</p>
+              <p className="text-sm font-medium text-gray-600">To Do</p>
+              <p className="text-3xl font-bold text-gray-600">{stats.toDo || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <CheckCircle2 className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+              <Target className="w-6 h-6 text-gray-600" />
             </div>
           </div>
         </div>
@@ -35,7 +35,7 @@ const DeveloperDashboard = ({ stats, projects, tasks, onTaskClick, onUpdateStatu
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">In Progress</p>
-              <p className="text-3xl font-bold text-blue-600">{stats.inProgress}</p>
+              <p className="text-3xl font-bold text-blue-600">{stats.inProgress || 0}</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <Clock className="w-6 h-6 text-blue-600" />
@@ -46,11 +46,23 @@ const DeveloperDashboard = ({ stats, projects, tasks, onTaskClick, onUpdateStatu
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Blocked</p>
-              <p className="text-3xl font-bold text-red-600">{stats.blocked}</p>
+              <p className="text-sm font-medium text-gray-600">Ready for Testing</p>
+              <p className="text-3xl font-bold text-yellow-600">{stats.readyForTesting || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-              <AlertTriangle className="w-6 h-6 text-red-600" />
+            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+              <AlertTriangle className="w-6 h-6 text-yellow-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Completed</p>
+              <p className="text-3xl font-bold text-green-600">{stats.completed || 0}</p>
+            </div>
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <CheckCircle2 className="w-6 h-6 text-green-600" />
             </div>
           </div>
         </div>

@@ -35,6 +35,7 @@ public class ProjectService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final UserProjectRepository userProjectRepository;
+    private final SprintService sprintService;
 
     public List<ProjectDto> getAllActiveProjects() {
         return projectRepository.findByActiveTrue()
@@ -53,6 +54,23 @@ public class ProjectService {
     public List<ProjectResponseDto> getAllProjectsWithStats() {
         return projectRepository.findAll()
                 .stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProjectResponseDto> getActiveProjectsForUser(Long userId) {
+        List<UserProject> userProjects = userProjectRepository.findByUserId(userId);
+        return userProjects.stream()
+                .map(UserProject::getProject)
+                .filter(Project::isActive)
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProjectResponseDto> getAllProjectsForUser(Long userId) {
+        List<UserProject> userProjects = userProjectRepository.findByUserId(userId);
+        return userProjects.stream()
+                .map(UserProject::getProject)
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
@@ -245,15 +263,24 @@ public class ProjectService {
         List<Sprint> sprints = sprintRepository.findByProjectId(project.getId());
         long totalTasks = taskRepository.countByProjectId(project.getId());
         long completedTasks = taskRepository.countByProjectIdAndStatus(project.getId(), TaskStatus.DONE);
-        
+
         // Use the actual stored status instead of calculating it
         String status = convertStatusToString(project.getStatus());
-        
+
         // Handle null collections safely and avoid ConcurrentModificationException
         // Use repository to count members instead of accessing lazy-loaded collection
         long memberCount = userProjectRepository.countByProjectId(project.getId());
         int sprintCount = (sprints != null) ? sprints.size() : 0;
-        
+
+        // Find active sprint
+        Sprint activeSprint = null;
+        if (sprints != null && !sprints.isEmpty()) {
+            activeSprint = sprints.stream()
+                    .filter(s -> s.getStatus() == Sprint.SprintStatus.ACTIVE)
+                    .findFirst()
+                    .orElse(null);
+        }
+
         return ProjectResponseDto.builder()
                 .id(project.getId())
                 .name(project.getName())
@@ -269,6 +296,7 @@ public class ProjectService {
                 .completedTasks((int) completedTasks)
                 .totalTasks((int) totalTasks)
                 .status(status)
+                .activeSprint(activeSprint != null ? sprintService.getSprintById(activeSprint.getId()) : null)
                 .build();
     }
     
