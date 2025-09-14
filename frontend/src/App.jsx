@@ -106,6 +106,30 @@ function App() {
 						</ProtectedRoute>
 					}
 				/>
+				<Route
+					path="/developer/tasks"
+					element={
+						<ProtectedRoute>
+							<Developer />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/developer/board/:projectId/:sprintId"
+					element={
+						<ProtectedRoute>
+							<Developer />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/developer/workload"
+					element={
+						<ProtectedRoute>
+							<Developer />
+						</ProtectedRoute>
+					}
+				/>
 
 				{/* Tester Routes */}
 				<Route

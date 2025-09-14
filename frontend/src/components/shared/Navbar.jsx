@@ -88,10 +88,22 @@ function Navbar() {
 							<Link
 								to="/developer"
 								className="hover:text-primary transition-colors">
-								My Workspace
+								Dashboard
 							</Link>
-							<Link to="/" className="hover:text-primary transition-colors">
-								Home
+							<Link
+								to="/developer/tasks"
+								className="hover:text-primary transition-colors">
+								My Tasks
+							</Link>
+							<Link
+								to="/developer"
+								className="hover:text-primary transition-colors">
+								Projects
+							</Link>
+							<Link
+								to="/developer/workload"
+								className="hover:text-primary transition-colors">
+								Workload
 							</Link>
 						</div>}
 
@@ -188,10 +200,22 @@ function Navbar() {
 							<Link
 								to="/developer"
 								className="hover:text-primary transition-colors">
-								My Workspace
+								Dashboard
 							</Link>
-							<Link to="/" className="hover:text-primary transition-colors">
-								Home
+							<Link
+								to="/developer/tasks"
+								className="hover:text-primary transition-colors">
+								My Tasks
+							</Link>
+							<Link
+								to="/developer"
+								className="hover:text-primary transition-colors">
+								Projects
+							</Link>
+							<Link
+								to="/developer/workload"
+								className="hover:text-primary transition-colors">
+								Workload
 							</Link>
 						</div>}
 
