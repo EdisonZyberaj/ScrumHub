@@ -24,4 +24,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     @Query("SELECT u FROM User u JOIN u.projectMemberships pm WHERE pm.project.id = :projectId AND pm.roleInProject = :roleInProject")
     List<User> findByProjectIdAndRoleInProject(@Param("projectId") Long projectId, @Param("roleInProject") String roleInProject);
+
+    boolean existsByUsernameAndIdNot(String username, Long id);
 }
