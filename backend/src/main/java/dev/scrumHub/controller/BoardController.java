@@ -33,8 +33,18 @@ public class BoardController {
             @RequestParam(required = false) Long projectId,
             @RequestParam(required = false) Long sprintId,
             @RequestParam(required = false) Long testerId) {
-        
+
         Map<String, List<TaskResponseDto>> boardData = boardService.getTesterBoard(projectId, sprintId, testerId);
+        return ResponseEntity.ok(boardData);
+    }
+
+    @GetMapping("/tester-enhanced")
+    public ResponseEntity<Map<String, Object>> getTesterBoardWithStats(
+            @RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) Long sprintId,
+            @RequestParam(required = false) Long testerId) {
+
+        Map<String, Object> boardData = boardService.getTesterBoardWithStats(projectId, sprintId, testerId);
         return ResponseEntity.ok(boardData);
     }
 

@@ -46,10 +46,10 @@ public class BoardService {
 
     public Map<String, List<TaskResponseDto>> getTesterBoard(Long projectId, Long sprintId, Long testerId) {
         List<Task> tasks;
-        
-        if (testerId != null) {
-            tasks = taskRepository.findByAssigneeIdAndSprintId(testerId, sprintId);
-        } else if (sprintId != null) {
+
+        if (sprintId != null) {
+            // For tester board, show ALL tasks in the sprint (not just tester-assigned ones)
+            // so they can see the complete workflow from dev to testing
             tasks = taskRepository.findBySprintIdOrderByPriorityDesc(sprintId);
         } else if (projectId != null) {
             tasks = taskRepository.findByProjectIdOrderByCreatedAtDesc(projectId);
@@ -57,19 +57,38 @@ public class BoardService {
             tasks = new ArrayList<>();
         }
 
-        // Filter tasks relevant for testers
-        List<Task> testerTasks = tasks.stream()
-                .filter(task -> {
-                    // Include tasks ready for testing or assigned to testers
-                    return task.getStatus() == Task.TaskStatus.READY_FOR_TESTING ||
-                           task.getStatus() == Task.TaskStatus.IN_TESTING ||
-                           task.getStatus() == Task.TaskStatus.BUG_FOUND ||
-                           task.getStatus() == Task.TaskStatus.TEST_PASSED ||
-                           (task.getAssignee() != null && task.getAssignee().getRole() == User.UserRole.TESTER);
-                })
-                .collect(Collectors.toList());
+        // Return all tasks (not filtered) for comprehensive board view
+        return groupTasksByStatus(tasks);
+    }
 
-        return groupTasksByStatus(testerTasks);
+    public Map<String, Object> getTesterBoardWithStats(Long projectId, Long sprintId, Long testerId) {
+        List<Task> tasks;
+
+        if (sprintId != null) {
+            tasks = taskRepository.findBySprintIdOrderByPriorityDesc(sprintId);
+        } else if (projectId != null) {
+            tasks = taskRepository.findByProjectIdOrderByCreatedAtDesc(projectId);
+        } else {
+            tasks = new ArrayList<>();
+        }
+
+        Map<String, Object> boardData = new HashMap<>();
+
+        // Group tasks by status
+        Map<String, List<TaskResponseDto>> tasksByStatus = groupTasksByStatus(tasks);
+        boardData.put("tasksByStatus", tasksByStatus);
+
+        // Add tester-specific statistics
+        Map<String, Integer> stats = new HashMap<>();
+        stats.put("totalTasks", tasks.size());
+        stats.put("readyForTesting", (int) tasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.READY_FOR_TESTING).count());
+        stats.put("inTesting", (int) tasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.IN_TESTING).count());
+        stats.put("testPassed", (int) tasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.TEST_PASSED).count());
+        stats.put("bugFound", (int) tasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.BUG_FOUND).count());
+        stats.put("completedTasks", (int) tasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.DONE).count());
+        boardData.put("stats", stats);
+
+        return boardData;
     }
 
     public Map<String, Object> getScrumMasterBoard(Long projectId, Long sprintId) {

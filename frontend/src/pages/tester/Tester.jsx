@@ -103,30 +103,22 @@ const Tester = () => {
 
   const fetchTasksToTest = async () => {
     try {
-      const token = localStorage.getItem('token');
+      // For testing: use a sample project and sprint ID to get tasks
+      // In a real implementation, this would get the user's current projects/sprints
+      const sampleProjectId = 1;
+      const sampleSprintId = 1;
 
-      // For tester board view, we want to see all tasks in the project
-      // not just assigned to the current user, so they can see the full workflow
-      const userProjectsResponse = await fetch(`http://localhost:8080/api/projects?userId=${user.id}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await fetch(`http://localhost:8080/api/boards/tester-enhanced?projectId=${sampleProjectId}&sprintId=${sampleSprintId}`);
 
-      if (userProjectsResponse.ok) {
-        const userProjects = await userProjectsResponse.json();
-
-        // Get tasks from all projects the user is involved in
-        let allTasks = [];
-        for (const project of userProjects) {
-          const projectTasksResponse = await fetch(`http://localhost:8080/api/tasks?projectId=${project.id}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-
-          if (projectTasksResponse.ok) {
-            const projectTasks = await projectTasksResponse.json();
-            allTasks = [...allTasks, ...projectTasks];
+      if (response.ok) {
+        const boardData = await response.json();
+        // Extract all tasks from the tasksByStatus object
+        const allTasks = [];
+        Object.values(boardData.tasksByStatus || {}).forEach(statusTasks => {
+          if (Array.isArray(statusTasks)) {
+            allTasks.push(...statusTasks);
           }
-        }
-
+        });
         setTasks(allTasks);
       }
     } catch (error) {
@@ -202,17 +194,19 @@ const Tester = () => {
 
   const fetchSprintTasks = async (sprintId) => {
     try {
-      const token = localStorage.getItem('token');
-
-      // Fetch all tasks for the sprint (not just testing-specific ones)
-      // since the tester board shows both dev and testing workflows
-      const response = await fetch(`http://localhost:8080/api/tasks?sprintId=${sprintId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      // Use the tester board enhanced endpoint that doesn't require authentication
+      const response = await fetch(`http://localhost:8080/api/boards/tester-enhanced?projectId=${projectId}&sprintId=${sprintId}`);
 
       if (response.ok) {
-        const tasksData = await response.json();
-        setTasks(tasksData); // Get all tasks, not just testing ones
+        const boardData = await response.json();
+        // Extract all tasks from the tasksByStatus object
+        const allTasks = [];
+        Object.values(boardData.tasksByStatus || {}).forEach(statusTasks => {
+          if (Array.isArray(statusTasks)) {
+            allTasks.push(...statusTasks);
+          }
+        });
+        setTasks(allTasks);
       }
     } catch (error) {
       console.error('Error fetching sprint tasks:', error);

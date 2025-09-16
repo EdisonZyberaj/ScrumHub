@@ -256,7 +256,7 @@ const TesterBoard = ({ project, sprint, tasks, navigate, onTaskClick, onUpdateSt
             dueDate: task.dueDate,
             assignee: task.assignee ? {
               id: task.assignee.id,
-              name: task.assigneeName || task.assignee.fullName,
+              name: task.assignee.fullName || task.assignee.username,
               avatar: null
             } : null,
             tags: task.tags || []

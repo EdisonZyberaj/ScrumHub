@@ -43,3 +43,33 @@ build/
 application.properties
 ### VS Code ###
 .vscode/
+
+### Temporary & Testing Files ###
+*.tmp
+*.temp
+*.log
+*.logs
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
+.*.swp
+.*.swo
+
+### Development & Testing ###
+*.orig
+*.rej
+*.patch
+/logs/
+/temp/
+/tmp/
+test-output/
+test-results/
+
+### IDE & Editor Files ###
+*.sublime-project
+*.sublime-workspace
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json

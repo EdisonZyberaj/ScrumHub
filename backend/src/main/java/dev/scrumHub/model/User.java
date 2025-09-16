@@ -54,15 +54,6 @@ public class User {
     @OneToMany(mappedBy = "createdBy")
     private Set<Task> createdTasks = new HashSet<>();
 
-    @OneToMany(mappedBy = "developer")
-    private Set<DeveloperBoard> developerBoardItems = new HashSet<>();
-
-    @OneToMany(mappedBy = "tester")
-    private Set<TesterBoard> testerBoardItems = new HashSet<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<TaskComment> comments = new HashSet<>();
-
     @OneToMany(mappedBy = "createdBy")
     private Set<TestCase> createdTestCases = new HashSet<>();
 
@@ -71,12 +62,6 @@ public class User {
 
     @OneToMany(mappedBy = "assignedTo")
     private Set<BugReport> assignedBugs = new HashSet<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<TimeLog> timeLogs = new HashSet<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Notification> notifications = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

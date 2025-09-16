@@ -16,8 +16,6 @@ public class UserStatsDto {
     private Long completedTasks;
     private Long activeTasks;
     private Long totalProjectsJoined;
-    private Long totalCommentsPosted;
-    private Long totalTimeLogged;
     private Long totalBugsReported;
     private Long totalBugsAssigned;
     private Long totalTestCasesCreated;

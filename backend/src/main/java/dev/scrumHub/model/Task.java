@@ -72,22 +72,10 @@ public class Task {
     private User createdBy;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<DeveloperBoard> developerBoards = new HashSet<>();
-
-    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<TesterBoard> testerBoards = new HashSet<>();
-
-    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<TaskComment> comments = new HashSet<>();
-
-    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<TestCase> testCases = new HashSet<>();
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<BugReport> bugReports = new HashSet<>();
-
-    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<TimeLog> timeLogs = new HashSet<>();
 
     @CreationTimestamp
     @Column(updatable = false)
