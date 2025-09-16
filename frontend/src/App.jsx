@@ -140,6 +140,38 @@ function App() {
 						</ProtectedRoute>
 					}
 				/>
+				<Route
+					path="/tester/tasks"
+					element={
+						<ProtectedRoute>
+							<Tester />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/tester/board/:projectId/:sprintId"
+					element={
+						<ProtectedRoute>
+							<Tester />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/tester/bugs"
+					element={
+						<ProtectedRoute>
+							<Tester />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/tester/testcases"
+					element={
+						<ProtectedRoute>
+							<Tester />
+						</ProtectedRoute>
+					}
+				/>
 
 				<Route path="*" element={<NotFound />} />
 			</Routes>
