@@ -14,6 +14,7 @@ import SprintPlanning from "./components/scrummaster/SprintPlanning/SprintPlanni
 import TaskAssignment from "./components/scrummaster/TaskAssignment/TaskAssignment";
 import Developer from "./pages/developer/Developer";
 import Tester from "./pages/tester/Tester";
+import { ProductOwnerDashboard, ProductBacklog } from "./components/productowner";
 import NotFound from "./pages/NotFound";
 
 import ProtectedRoute from "./components/shared/ProtectedRoute";
@@ -169,6 +170,48 @@ function App() {
 					element={
 						<ProtectedRoute>
 							<Tester />
+						</ProtectedRoute>
+					}
+				/>
+
+				{/* Product Owner Routes */}
+				<Route
+					path="/productowner"
+					element={
+						<ProtectedRoute>
+							<ProductOwnerDashboard />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/productowner/dashboard"
+					element={
+						<ProtectedRoute>
+							<ProductOwnerDashboard />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/productowner/backlog"
+					element={
+						<ProtectedRoute>
+							<ProductBacklog />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/productowner/epics"
+					element={
+						<ProtectedRoute>
+							<ProductOwnerDashboard />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/productowner/releases"
+					element={
+						<ProtectedRoute>
+							<ProductOwnerDashboard />
 						</ProtectedRoute>
 					}
 				/>

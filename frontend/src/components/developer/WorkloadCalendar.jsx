@@ -21,7 +21,7 @@ const WorkloadCalendar = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/developer/tasks', {
+      const response = await fetch('http:
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -63,20 +63,17 @@ const WorkloadCalendar = () => {
 
     const days = [];
 
-    // Previous month's trailing days
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
       const prevDate = new Date(year, month, -i);
       days.push({ date: prevDate, isCurrentMonth: false });
     }
 
-    // Current month's days
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDay = new Date(year, month, day);
       days.push({ date: currentDay, isCurrentMonth: true });
     }
 
-    // Next month's leading days
-    const remainingDays = 42 - days.length; // 6 weeks * 7 days
+    const remainingDays = 42 - days.length;
     for (let day = 1; day <= remainingDays; day++) {
       const nextDate = new Date(year, month + 1, day);
       days.push({ date: nextDate, isCurrentMonth: false });

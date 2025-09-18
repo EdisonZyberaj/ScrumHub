@@ -54,7 +54,6 @@ function Dashboard() {
 	useEffect(() => {
 		fetchDashboardData();
 
-		// Auto-refresh every 5 minutes
 		const interval = setInterval(fetchDashboardData, 5 * 60 * 1000);
 		return () => clearInterval(interval);
 	}, []);

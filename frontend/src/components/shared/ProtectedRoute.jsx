@@ -18,7 +18,7 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 				}
 
 				const response = await axios.get(
-					"http://localhost:8080/api/user/profile",
+					"http:
 					{
 						headers: {
 							Authorization: `Bearer ${token}`
@@ -43,14 +43,11 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 		return <LoadingSpinner />;
 	}
 
-	// Not authenticated
 	if (!user) {
 		return <Navigate to="/login" replace />;
 	}
 
-	// Check role-based access
 	if (requiredRole && user.role !== requiredRole) {
-		// Redirect to appropriate dashboard based on user's actual role
 		const roleDashboards = {
 			SCRUM_MASTER: "/scrum-master",
 			DEVELOPER: "/developer",
@@ -61,7 +58,6 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 		return <Navigate to={roleDashboards[user.role] || "/dashboard"} replace />;
 	}
 
-	// User is authenticated and has required role (if specified)
 	return React.cloneElement(children, { user });
 };
 

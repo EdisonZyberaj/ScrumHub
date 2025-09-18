@@ -36,7 +36,7 @@ const ProfilePage = () => {
 			try {
 				const token = localStorage.getItem("token");
 				const response = await axios.get(
-					"http://localhost:8080/api/user/profile",
+					"http:
 					{
 						headers: { Authorization: `Bearer ${token}` }
 					}
@@ -62,7 +62,7 @@ const ProfilePage = () => {
 		try {
 			const token = localStorage.getItem("token");
 			const response = await axios.get(
-				"http://localhost:8080/api/user/statistics",
+				"http:
 				{
 					headers: { Authorization: `Bearer ${token}` }
 				}
@@ -77,7 +77,7 @@ const ProfilePage = () => {
 		try {
 			const token = localStorage.getItem("token");
 			const response = await axios.get(
-				"http://localhost:8080/api/user/activity",
+				"http:
 				{
 					headers: { Authorization: `Bearer ${token}` }
 				}
@@ -96,7 +96,7 @@ const ProfilePage = () => {
 				fullName: formData.fullName,
 				username: formData.username
 			};
-			const response = await axios.put("http://localhost:8080/api/user/profile", updateData, {
+			const response = await axios.put("http:
 				headers: { Authorization: `Bearer ${token}` }
 			});
 			setUser(response.data);
@@ -120,7 +120,7 @@ const ProfilePage = () => {
 
 		try {
 			const token = localStorage.getItem("token");
-			await axios.post("http://localhost:8080/api/user/change-password", passwordData, {
+			await axios.post("http:
 				headers: { Authorization: `Bearer ${token}` }
 			});
 			setPasswordData({

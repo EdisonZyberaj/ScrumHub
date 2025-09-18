@@ -12,7 +12,6 @@ const CreateProjectModal = ({ isOpen, onClose, onSubmit }) => {
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Auto-generate project key from name
     const handleNameChange = (e) => {
         const name = e.target.value;
         setFormData(prev => ({
@@ -42,7 +41,6 @@ const CreateProjectModal = ({ isOpen, onClose, onSubmit }) => {
     const validateForm = () => {
         const newErrors = {};
 
-        // Required fields validation
         if (!formData.name.trim()) {
             newErrors.name = 'Project name is required';
         } else if (formData.name.length < 3) {
@@ -63,7 +61,6 @@ const CreateProjectModal = ({ isOpen, onClose, onSubmit }) => {
             newErrors.description = 'Description must be less than 500 characters';
         }
 
-        // Date validation
         if (formData.startDate && formData.endDate) {
             const startDate = new Date(formData.startDate);
             const endDate = new Date(formData.endDate);
@@ -87,7 +84,6 @@ const CreateProjectModal = ({ isOpen, onClose, onSubmit }) => {
         setIsSubmitting(true);
         
         try {
-            // Prepare data according to backend schema
             const projectData = {
                 name: formData.name.trim(),
                 description: formData.description.trim(),
@@ -99,7 +95,6 @@ const CreateProjectModal = ({ isOpen, onClose, onSubmit }) => {
 
             await onSubmit(projectData);
             
-            // Reset form
             setFormData({
                 name: '',
                 description: '',

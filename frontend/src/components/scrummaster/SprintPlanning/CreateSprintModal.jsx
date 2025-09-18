@@ -41,7 +41,6 @@ const CreateSprintModal = ({ isOpen, onClose, onSubmit, projects, selectedProjec
             newErrors.endDate = 'End date is required';
         }
 
-        // Date validation
         if (formData.startDate && formData.endDate) {
             const startDate = new Date(formData.startDate);
             const endDate = new Date(formData.endDate);
@@ -56,7 +55,6 @@ const CreateSprintModal = ({ isOpen, onClose, onSubmit, projects, selectedProjec
                 newErrors.endDate = 'End date must be after start date';
             }
 
-            // Check if sprint duration is reasonable (1-4 weeks)
             const diffTime = endDate - startDate;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
@@ -90,7 +88,6 @@ const CreateSprintModal = ({ isOpen, onClose, onSubmit, projects, selectedProjec
 
             await onSubmit(sprintData);
             
-            // Reset form
             setFormData({
                 name: '',
                 goal: '',
@@ -120,11 +117,10 @@ const CreateSprintModal = ({ isOpen, onClose, onSubmit, projects, selectedProjec
         }
     };
 
-    // Auto-suggest sprint name based on project
     const generateSprintName = () => {
         const project = projects.find(p => p.id === selectedProject);
         if (project) {
-            const sprintNumber = Math.floor(Math.random() * 20) + 1; // Mock sprint number
+            const sprintNumber = Math.floor(Math.random() * 20) + 1;
             return `${project.key} Sprint ${sprintNumber}`;
         }
         return '';
@@ -137,7 +133,6 @@ const CreateSprintModal = ({ isOpen, onClose, onSubmit, projects, selectedProjec
         }
     };
 
-    // Calculate sprint duration in days
     const getSprintDuration = () => {
         if (formData.startDate && formData.endDate) {
             const start = new Date(formData.startDate);

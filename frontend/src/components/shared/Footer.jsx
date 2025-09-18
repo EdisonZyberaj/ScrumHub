@@ -86,21 +86,21 @@ function Footer() {
 					</ul>
 					<div className="flex space-x-4 mt-4">
 						<Link
-							to="//www.linkedin.com"
+							to="
 							target="_blank"
 							rel="noopener noreferrer"
 							className="text-white hover:text-primary transition-colors">
 							<Linkedin className="w-6 h-6" />
 						</Link>
 						<Link
-							to="//www.twitter.com"
+							to="
 							target="_blank"
 							rel="noopener noreferrer"
 							className="text-white hover:text-primary transition-colors">
 							<Twitter className="w-6 h-6" />
 						</Link>
 						<Link
-							to="//www.instagram.com"
+							to="
 							target="_blank"
 							rel="noopener noreferrer"
 							className="text-white hover:text-primary transition-colors">

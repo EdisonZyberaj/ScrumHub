@@ -120,11 +120,10 @@ const TestCases = () => {
         : tc
     ));
 
-    // Simulate test execution
     setTimeout(() => {
       setTestCases(prev => prev.map(tc =>
         tc.id === testCaseId
-          ? { ...tc, status: 'PASSED' } // In real app, this would be determined by actual test results
+          ? { ...tc, status: 'PASSED' }
           : tc
       ));
     }, 2000);

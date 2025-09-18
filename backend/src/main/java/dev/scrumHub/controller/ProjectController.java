@@ -29,14 +29,12 @@ public class ProjectController {
         List<ProjectResponseDto> projects;
 
         if (userId != null) {
-            // Get projects for specific user
             if (activeOnly) {
                 projects = projectService.getActiveProjectsForUser(userId);
             } else {
                 projects = projectService.getAllProjectsForUser(userId);
             }
         } else {
-            // Get all projects
             if (activeOnly) {
                 projects = projectService.getAllActiveProjectsWithStats();
             } else {

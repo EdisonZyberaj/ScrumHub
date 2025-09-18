@@ -73,3 +73,5 @@ test-results/
 .vscode/settings.json
 .vscode/launch.json
 .vscode/extensions.json
+test-api.sh
+test_api.md

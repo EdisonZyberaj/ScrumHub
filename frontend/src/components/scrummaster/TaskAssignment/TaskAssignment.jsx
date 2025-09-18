@@ -47,7 +47,6 @@ const TaskAssignment = () => {
         try {
             const token = localStorage.getItem('token');
             
-            // Fetch projects
             const projectsResponse = await fetch('/api/projects', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -59,7 +58,6 @@ const TaskAssignment = () => {
                     setSelectedProject(projectsData[0].id);
                 }
             } else {
-                // Mock projects
                 const mockProjects = [
                     { id: 1, name: 'E-commerce Platform', key: 'ECOM' },
                     { id: 2, name: 'Mobile Banking App', key: 'MBA' }
@@ -70,7 +68,6 @@ const TaskAssignment = () => {
                 }
             }
 
-            // Fetch sprints for selected project
             if (selectedProject) {
                 const sprintsResponse = await fetch(`/api/sprints?projectId=${selectedProject}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -84,7 +81,6 @@ const TaskAssignment = () => {
                         setSelectedSprint(activeSprint.id);
                     }
                 } else {
-                    // Mock sprints
                     const mockSprints = [
                         { id: 1, name: 'Sprint 15', active: true, projectId: selectedProject },
                         { id: 2, name: 'Sprint 16', active: false, projectId: selectedProject }
@@ -96,7 +92,6 @@ const TaskAssignment = () => {
                 }
             }
 
-            // Fetch team members
             const membersResponse = await fetch('/api/users?role=DEVELOPER,TESTER', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -105,7 +100,6 @@ const TaskAssignment = () => {
                 const membersData = await membersResponse.json();
                 setTeamMembers(membersData);
             } else {
-                // Mock team members
                 const mockMembers = [
                     { 
                         id: 1, 
@@ -143,7 +137,6 @@ const TaskAssignment = () => {
                 setTeamMembers(mockMembers);
             }
 
-            // Fetch tasks for selected sprint
             if (selectedSprint) {
                 const tasksResponse = await fetch(`/api/tasks?sprintId=${selectedSprint}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -153,7 +146,6 @@ const TaskAssignment = () => {
                     const tasksData = await tasksResponse.json();
                     setTasks(tasksData);
                 } else {
-                    // Mock tasks based on existing entities
                     const mockTasks = [
                         {
                             id: 1,
@@ -297,7 +289,6 @@ const TaskAssignment = () => {
             }
         } catch (error) {
             console.error('Error creating task:', error);
-            // Mock for demo
             const newTask = {
                 id: Date.now(),
                 ...taskData,
@@ -330,7 +321,6 @@ const TaskAssignment = () => {
             }
         } catch (error) {
             console.error('Error assigning task:', error);
-            // Mock for demo
             const assignee = teamMembers.find(m => m.id === assigneeId);
             setTasks(prev => prev.map(t => 
                 t.id === taskId 

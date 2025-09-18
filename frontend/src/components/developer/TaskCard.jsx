@@ -41,7 +41,7 @@ const TaskCard = ({ task, showProject = true, onTaskClick, onUpdateStatus }) => 
       case 'TO_DO': return 'IN_PROGRESS';
       case 'IN_PROGRESS': return 'READY_FOR_TESTING';
       case 'BUG_FOUND': return 'IN_PROGRESS';
-      case 'READY_FOR_TESTING': return 'IN_PROGRESS'; // Allow pull back
+      case 'READY_FOR_TESTING': return 'IN_PROGRESS';
       default: return null;
     }
   };

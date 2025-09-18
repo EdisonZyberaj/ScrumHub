@@ -92,6 +92,6 @@ public class User {
     }
 
     public enum UserRole {
-        GUEST, DEVELOPER, TESTER, SCRUM_MASTER
+        GUEST, DEVELOPER, TESTER, SCRUM_MASTER, PRODUCT_OWNER
     }
 }

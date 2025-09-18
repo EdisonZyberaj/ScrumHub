@@ -40,11 +40,9 @@ public class SprintService {
 
     @Transactional
     public SprintResponseDto createSprint(CreateSprintRequestDto requestDto) {
-        // Check if project exists
         Project project = projectRepository.findById(requestDto.getProjectId())
                 .orElseThrow(() -> new RuntimeException("Project not found with id: " + requestDto.getProjectId()));
 
-        // Check if sprint name is unique within project
         if (sprintRepository.existsByProjectIdAndName(requestDto.getProjectId(), requestDto.getName())) {
             throw new RuntimeException("Sprint with name '" + requestDto.getName() + "' already exists in this project");
         }
@@ -68,7 +66,6 @@ public class SprintService {
                 .orElseThrow(() -> new RuntimeException("Sprint not found with id: " + sprintId));
 
         if (requestDto.isActive()) {
-            // Deactivate other active sprints in the same project
             List<Sprint> activeSprints = sprintRepository.findByProjectIdAndStatus(
                     sprint.getProject().getId(), SprintStatus.ACTIVE);
             
@@ -93,7 +90,6 @@ public class SprintService {
         Sprint sprint = sprintRepository.findById(sprintId)
                 .orElseThrow(() -> new RuntimeException("Sprint not found with id: " + sprintId));
         
-        // Check if sprint has tasks
         long taskCount = taskRepository.countBySprintId(sprintId);
         if (taskCount > 0) {
             throw new RuntimeException("Cannot delete sprint with existing tasks. Please move or delete tasks first.");

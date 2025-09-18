@@ -33,7 +33,6 @@ public class BoardService {
             tasks = new ArrayList<>();
         }
 
-        // Filter tasks relevant for developers
         List<Task> developerTasks = tasks.stream()
                 .filter(task -> {
                     if (task.getAssignee() == null) return false;
@@ -48,8 +47,6 @@ public class BoardService {
         List<Task> tasks;
 
         if (sprintId != null) {
-            // For tester board, show ALL tasks in the sprint (not just tester-assigned ones)
-            // so they can see the complete workflow from dev to testing
             tasks = taskRepository.findBySprintIdOrderByPriorityDesc(sprintId);
         } else if (projectId != null) {
             tasks = taskRepository.findByProjectIdOrderByCreatedAtDesc(projectId);
@@ -57,7 +54,6 @@ public class BoardService {
             tasks = new ArrayList<>();
         }
 
-        // Return all tasks (not filtered) for comprehensive board view
         return groupTasksByStatus(tasks);
     }
 
@@ -74,11 +70,9 @@ public class BoardService {
 
         Map<String, Object> boardData = new HashMap<>();
 
-        // Group tasks by status
         Map<String, List<TaskResponseDto>> tasksByStatus = groupTasksByStatus(tasks);
         boardData.put("tasksByStatus", tasksByStatus);
 
-        // Add tester-specific statistics
         Map<String, Integer> stats = new HashMap<>();
         stats.put("totalTasks", tasks.size());
         stats.put("readyForTesting", (int) tasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.READY_FOR_TESTING).count());
@@ -104,14 +98,11 @@ public class BoardService {
 
         Map<String, Object> boardData = new HashMap<>();
         
-        // Group tasks by status
         Map<String, List<TaskResponseDto>> tasksByStatus = groupTasksByStatus(tasks);
         boardData.put("tasksByStatus", tasksByStatus);
         
-        // Skip tasksByAssignee for now to avoid Hibernate issues
         boardData.put("tasksByAssignee", new HashMap<>());
         
-        // Add summary statistics
         Map<String, Integer> stats = new HashMap<>();
         stats.put("totalTasks", tasks.size());
         stats.put("completedTasks", (int) tasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.DONE).count());
@@ -143,7 +134,6 @@ public class BoardService {
     private Map<String, List<TaskResponseDto>> groupTasksByStatus(List<Task> tasks) {
         Map<String, List<TaskResponseDto>> grouped = new LinkedHashMap<>();
         
-        // Initialize all status groups
         grouped.put("TO_DO", new ArrayList<>());
         grouped.put("IN_PROGRESS", new ArrayList<>());
         grouped.put("READY_FOR_TESTING", new ArrayList<>());
@@ -152,7 +142,6 @@ public class BoardService {
         grouped.put("TEST_PASSED", new ArrayList<>());
         grouped.put("DONE", new ArrayList<>());
         
-        // Group tasks by status
         for (Task task : tasks) {
             String status = task.getStatus().toString();
             TaskResponseDto taskDto = taskService.convertToDto(task);
@@ -165,7 +154,6 @@ public class BoardService {
     private Map<String, List<TaskResponseDto>> groupTasksByAssignee(List<Task> tasks) {
         Map<String, List<TaskResponseDto>> grouped = new LinkedHashMap<>();
         
-        // Add unassigned tasks first
         List<TaskResponseDto> unassignedTasks = tasks.stream()
                 .filter(task -> task.getAssignee() == null)
                 .map(taskService::convertToDto)
@@ -174,7 +162,6 @@ public class BoardService {
             grouped.put("Unassigned", unassignedTasks);
         }
         
-        // Group by assignee
         Map<User, List<Task>> tasksByUser = tasks.stream()
                 .filter(task -> task.getAssignee() != null)
                 .collect(Collectors.groupingBy(Task::getAssignee));

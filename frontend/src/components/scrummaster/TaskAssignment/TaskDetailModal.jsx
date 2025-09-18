@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { X, Target, Calendar, Clock, AlertTriangle, CheckCircle, Play, Eye, User, Edit } from 'lucide-react';
 
-const TaskDetailModal = ({ isOpen, onClose, task, onReassign, teamMembers = [] }) => {
+const TaskDetailModal = ({ isOpen, onClose, task, onReassign, teamMembers = [], onStatusChange }) => {
     const [isReassigning, setIsReassigning] = useState(false);
     const [selectedAssignee, setSelectedAssignee] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isChangingStatus, setIsChangingStatus] = useState(false);
+    const [selectedStatus, setSelectedStatus] = useState('');
 
     useEffect(() => {
         if (task && task.assignedTo) {
             setSelectedAssignee(task.assignedTo.toString());
         } else {
             setSelectedAssignee('');
+        }
+        if (task && task.status) {
+            setSelectedStatus(task.status);
         }
     }, [task]);
 
@@ -22,12 +27,28 @@ const TaskDetailModal = ({ isOpen, onClose, task, onReassign, teamMembers = [] }
                 return { label: 'In Progress', color: 'bg-blue-100 text-blue-800', icon: Play };
             case 'READY_FOR_TESTING':
                 return { label: 'Ready for Testing', color: 'bg-yellow-100 text-yellow-800', icon: Eye };
+            case 'IN_TESTING':
+                return { label: 'In Testing', color: 'bg-purple-100 text-purple-800', icon: Eye };
+            case 'BUG_FOUND':
+                return { label: 'Bug Found', color: 'bg-red-100 text-red-800', icon: AlertTriangle };
+            case 'TEST_PASSED':
+                return { label: 'Test Passed', color: 'bg-green-100 text-green-800', icon: CheckCircle };
             case 'DONE':
                 return { label: 'Done', color: 'bg-green-100 text-green-800', icon: CheckCircle };
             default:
                 return { label: 'To Do', color: 'bg-gray-100 text-gray-800', icon: Target };
         }
     };
+
+    const getAllStatuses = () => [
+        { value: 'TO_DO', label: 'To Do' },
+        { value: 'IN_PROGRESS', label: 'In Progress' },
+        { value: 'READY_FOR_TESTING', label: 'Ready for Testing' },
+        { value: 'IN_TESTING', label: 'In Testing' },
+        { value: 'BUG_FOUND', label: 'Bug Found' },
+        { value: 'TEST_PASSED', label: 'Test Passed' },
+        { value: 'DONE', label: 'Done' }
+    ];
 
     const getPriorityInfo = (priority) => {
         switch (priority) {
@@ -57,6 +78,21 @@ const TaskDetailModal = ({ isOpen, onClose, task, onReassign, teamMembers = [] }
             setIsReassigning(false);
         } catch (error) {
             console.error('Error reassigning task:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleStatusChange = async () => {
+        if (!selectedStatus || selectedStatus === task.status) return;
+
+        setIsSubmitting(true);
+        try {
+            await onStatusChange(task.originalId, selectedStatus);
+            setIsChangingStatus(false);
+        } catch (error) {
+            console.error('Error changing task status:', error);
+            alert(`Failed to change task status: ${error.message}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -106,6 +142,63 @@ const TaskDetailModal = ({ isOpen, onClose, task, onReassign, teamMembers = [] }
                                 </span>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Status Change Section */}
+                    <div>
+                        <div className="flex items-center justify-between mb-3">
+                            <h4 className="text-sm font-medium text-gray-700">Task Status</h4>
+                            <button
+                                onClick={() => setIsChangingStatus(!isChangingStatus)}
+                                className="text-primary hover:text-hoverBlue text-sm flex items-center gap-1"
+                            >
+                                <Edit className="h-3 w-3" />
+                                {isChangingStatus ? 'Cancel' : 'Change Status'}
+                            </button>
+                        </div>
+
+                        {!isChangingStatus ? (
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-sm px-3 py-1 rounded-full flex items-center gap-1 ${statusInfo.color}`}>
+                                        {React.createElement(statusInfo.icon, { className: "h-4 w-4" })}
+                                        {statusInfo.label}
+                                    </span>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                <select
+                                    value={selectedStatus}
+                                    onChange={(e) => setSelectedStatus(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    disabled={isSubmitting}
+                                >
+                                    {getAllStatuses().map(status => (
+                                        <option key={status.value} value={status.value}>
+                                            {status.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={handleStatusChange}
+                                        disabled={isSubmitting || selectedStatus === task.status}
+                                        className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-hoverBlue disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-2"
+                                    >
+                                        {isSubmitting && <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent" />}
+                                        {isSubmitting ? 'Updating...' : 'Update Status'}
+                                    </button>
+                                    <button
+                                        onClick={() => setIsChangingStatus(false)}
+                                        disabled={isSubmitting}
+                                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 text-sm"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Description */}

@@ -6,11 +6,11 @@ const SprintDetailModal = ({ isOpen, onClose, sprint, onUpdateSprint }) => {
     const [selectedStatus, setSelectedStatus] = useState(sprint?.active ? 'active' : 'inactive');
 
     const handleStatusUpdate = async (newStatus) => {
-        console.log('SprintDetailModal: Updating status to:', newStatus); // Debug log
+        console.log('SprintDetailModal: Updating status to:', newStatus);
         setIsUpdating(true);
         try {
             await onUpdateSprint(sprint.id, newStatus === 'active');
-            console.log('SprintDetailModal: Status update completed'); // Debug log
+            console.log('SprintDetailModal: Status update completed');
             onClose();
         } catch (error) {
             console.error('Error updating sprint status:', error);

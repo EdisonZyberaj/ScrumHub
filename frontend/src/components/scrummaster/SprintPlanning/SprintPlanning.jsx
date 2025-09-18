@@ -34,7 +34,6 @@ const SprintPlanning = () => {
         fetchData();
     }, [selectedProject]);
 
-    // Effect to fetch sprints when selectedProject changes
     useEffect(() => {
         if (selectedProject) {
             fetchSprintsForProject(selectedProject);
@@ -46,7 +45,7 @@ const SprintPlanning = () => {
         
         try {
             const token = localStorage.getItem('token');
-            const sprintsResponse = await fetch(`http://localhost:8080/api/sprints?projectId=${projectId}`, {
+            const sprintsResponse = await fetch(`http:
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             
@@ -56,7 +55,6 @@ const SprintPlanning = () => {
                 setActiveSprint(sprintsData.find(s => s.status === 'ACTIVE'));
             } else {
                 console.error('Failed to fetch sprints:', sprintsResponse.status);
-                // Create mock sprint data for demo when API fails
                 const mockSprints = [
                     {
                         id: `mock-${projectId}-1`,
@@ -99,8 +97,7 @@ const SprintPlanning = () => {
         try {
             const token = localStorage.getItem('token');
             
-            // Fetch projects first
-            const projectsResponse = await fetch('http://localhost:8080/api/projects', {
+            const projectsResponse = await fetch('http:
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             
@@ -111,7 +108,6 @@ const SprintPlanning = () => {
                     setSelectedProject(projectsData[0].id);
                 }
             } else {
-                // Mock data for demo - based on Project entity
                 const mockProjects = [
                     { 
                         id: 1, 
@@ -136,10 +132,9 @@ const SprintPlanning = () => {
                 }
             }
 
-            // Fetch sprints for selected project
             if (selectedProject) {
                 try {
-                    const sprintsResponse = await fetch(`http://localhost:8080/api/sprints?projectId=${selectedProject}`, {
+                    const sprintsResponse = await fetch(`http:
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     
@@ -149,7 +144,6 @@ const SprintPlanning = () => {
                         setActiveSprint(sprintsData.find(s => s.status === 'ACTIVE'));
                     } else {
                         console.error('Failed to fetch sprints:', sprintsResponse.status);
-                        // Create mock sprint data for demo when API fails
                         const mockSprints = [
                             {
                                 id: 1,
@@ -212,7 +206,7 @@ const SprintPlanning = () => {
     const handleCreateSprint = async (sprintData) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:8080/api/sprints', {
+            const response = await fetch('http:
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -233,7 +227,7 @@ const SprintPlanning = () => {
             }
         } catch (error) {
             console.error('Error creating sprint:', error);
-            throw error; // Let the modal handle the error display
+            throw error;
         }
     };
 
@@ -241,9 +235,8 @@ const SprintPlanning = () => {
         try {
             const token = localStorage.getItem('token');
             
-            // First, end any active sprint
             if (activeSprint && activeSprint.id !== sprintId) {
-                await fetch(`http://localhost:8080/api/sprints/${activeSprint.id}`, {
+                await fetch(`http:
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -253,8 +246,7 @@ const SprintPlanning = () => {
                 });
             }
 
-            // Start the selected sprint
-            const response = await fetch(`http://localhost:8080/api/sprints/${sprintId}`, {
+            const response = await fetch(`http:
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -289,7 +281,7 @@ const SprintPlanning = () => {
     const handleUpdateSprintStatus = async (sprintId, isActive) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:8080/api/sprints/${sprintId}`, {
+            const response = await fetch(`http:
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json', 
@@ -301,20 +293,17 @@ const SprintPlanning = () => {
             if (response.ok) {
                 const updatedSprint = await response.json();
                 
-                // Update local state
                 setSprints(prevSprints => {
                     return prevSprints.map(sprint => {
                         if (sprint.id === sprintId) {
                             return { ...sprint, ...updatedSprint };
                         } else if (isActive) {
-                            // Deactivate other sprints when activating this one
                             return { ...sprint, active: false, status: 'PLANNED' };
                         }
                         return sprint;
                     });
                 });
 
-                // Update active sprint
                 if (isActive) {
                     setActiveSprint(updatedSprint);
                 } else {

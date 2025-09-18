@@ -35,7 +35,6 @@ const Tester = () => {
     resolvedBugs: 0
   });
 
-  // Filters for tasks view
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ready_for_testing');
   const [priorityFilter, setPriorityFilter] = useState('all');
@@ -103,16 +102,13 @@ const Tester = () => {
 
   const fetchTasksToTest = async () => {
     try {
-      // For testing: use a sample project and sprint ID to get tasks
-      // In a real implementation, this would get the user's current projects/sprints
       const sampleProjectId = 1;
       const sampleSprintId = 1;
 
-      const response = await fetch(`http://localhost:8080/api/boards/tester-enhanced?projectId=${sampleProjectId}&sprintId=${sampleSprintId}`);
+      const response = await fetch(`http:
 
       if (response.ok) {
         const boardData = await response.json();
-        // Extract all tasks from the tasksByStatus object
         const allTasks = [];
         Object.values(boardData.tasksByStatus || {}).forEach(statusTasks => {
           if (Array.isArray(statusTasks)) {
@@ -129,7 +125,7 @@ const Tester = () => {
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/projects?userId=${user.id}`, {
+      const response = await fetch(`http:
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -146,8 +142,7 @@ const Tester = () => {
     try {
       const token = localStorage.getItem('token');
 
-      // Get all tasks to calculate stats
-      const tasksResponse = await fetch(`http://localhost:8080/api/tasks?assigneeId=${user.id}`, {
+      const tasksResponse = await fetch(`http:
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -163,7 +158,7 @@ const Tester = () => {
   const fetchProjectData = async (projectId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/projects/${projectId}`, {
+      const response = await fetch(`http:
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -179,7 +174,7 @@ const Tester = () => {
   const fetchSprintData = async (sprintId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/sprints/${sprintId}`, {
+      const response = await fetch(`http:
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -194,12 +189,10 @@ const Tester = () => {
 
   const fetchSprintTasks = async (sprintId) => {
     try {
-      // Use the tester board enhanced endpoint that doesn't require authentication
-      const response = await fetch(`http://localhost:8080/api/boards/tester-enhanced?projectId=${projectId}&sprintId=${sprintId}`);
+      const response = await fetch(`http:
 
       if (response.ok) {
         const boardData = await response.json();
-        // Extract all tasks from the tasksByStatus object
         const allTasks = [];
         Object.values(boardData.tasksByStatus || {}).forEach(statusTasks => {
           if (Array.isArray(statusTasks)) {
@@ -220,8 +213,8 @@ const Tester = () => {
       inTesting: tasksData.filter(t => t.status === 'IN_TESTING').length,
       testPassed: tasksData.filter(t => t.status === 'TEST_PASSED').length,
       bugFound: tasksData.filter(t => t.status === 'BUG_FOUND').length,
-      totalBugs: 0, // This would come from bug reports API
-      resolvedBugs: 0 // This would come from bug reports API
+      totalBugs: 0,
+      resolvedBugs: 0
     };
     setStats(stats);
   };
@@ -260,7 +253,7 @@ const Tester = () => {
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/tasks/${taskId}/status`, {
+      const response = await fetch(`http:
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -270,7 +263,7 @@ const Tester = () => {
       });
 
       if (response.ok) {
-        fetchData(); // Refresh data
+        fetchData();
       } else {
         const errorData = await response.json();
         alert(errorData.message || 'Failed to update task status');
@@ -383,7 +376,7 @@ const Tester = () => {
           onClose={() => setShowBugModal(false)}
           onSubmit={() => {
             setShowBugModal(false);
-            fetchData(); // Refresh data after bug report
+            fetchData();
           }}
         />
       </main>

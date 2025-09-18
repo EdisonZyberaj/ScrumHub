@@ -139,7 +139,6 @@ public class ProjectService {
         Project existingProject = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found with id: " + id));
 
-        // Check if name or key conflicts with other projects
         if (!existingProject.getName().equals(projectDto.getName()) && 
             projectRepository.existsByName(projectDto.getName())) {
             throw new RuntimeException("Project with name '" + projectDto.getName() + "' already exists");
@@ -150,7 +149,6 @@ public class ProjectService {
             throw new RuntimeException("Project with key '" + projectDto.getKey() + "' already exists");
         }
 
-        // Update fields
         existingProject.setName(projectDto.getName());
         existingProject.setDescription(projectDto.getDescription());
         existingProject.setKey(projectDto.getKey());
@@ -158,14 +156,12 @@ public class ProjectService {
         existingProject.setEndDate(projectDto.getEndDate());
         existingProject.setActive(projectDto.isActive());
         
-        // Update status if provided
         if (projectDto.getStatus() != null) {
             try {
                 String normalizedStatus = projectDto.getStatus().toLowerCase().replace("-", "_");
                 Project.ProjectStatus status = Project.ProjectStatus.valueOf(normalizedStatus.toUpperCase());
                 existingProject.setStatus(status);
             } catch (IllegalArgumentException e) {
-                // Keep existing status if invalid status provided
             }
         }
 
@@ -178,7 +174,6 @@ public class ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found with id: " + id));
         
-        // Parse and validate status
         Project.ProjectStatus projectStatus;
         try {
             String normalizedStatus = status.toLowerCase().replace("-", "_");
@@ -187,10 +182,8 @@ public class ProjectService {
             throw new RuntimeException("Invalid status: " + status + ". Valid values are: active, completed, on-hold, planned");
         }
         
-        // Update project status
         project.setStatus(projectStatus);
         
-        // Update project active status based on the status
         switch (projectStatus) {
             case ACTIVE:
             case PLANNED:
@@ -211,7 +204,6 @@ public class ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found with id: " + id));
         
-        // Soft delete by setting active to false
         project.setActive(false);
         projectRepository.save(project);
     }
@@ -259,20 +251,15 @@ public class ProjectService {
     }
     
     private ProjectResponseDto convertToResponseDto(Project project) {
-        // Calculate stats
         List<Sprint> sprints = sprintRepository.findByProjectId(project.getId());
         long totalTasks = taskRepository.countByProjectId(project.getId());
         long completedTasks = taskRepository.countByProjectIdAndStatus(project.getId(), TaskStatus.DONE);
 
-        // Use the actual stored status instead of calculating it
         String status = convertStatusToString(project.getStatus());
 
-        // Handle null collections safely and avoid ConcurrentModificationException
-        // Use repository to count members instead of accessing lazy-loaded collection
         long memberCount = userProjectRepository.countByProjectId(project.getId());
         int sprintCount = (sprints != null) ? sprints.size() : 0;
 
-        // Find active sprint
         Sprint activeSprint = null;
         if (sprints != null && !sprints.isEmpty()) {
             activeSprint = sprints.stream()
@@ -315,7 +302,6 @@ public class ProjectService {
             
             for (Project project : allProjects) {
                 if (project.getStatus() == null) {
-                    // Set status based on active field for existing projects
                     if (project.isActive()) {
                         project.setStatus(Project.ProjectStatus.ACTIVE);
                     } else {
@@ -329,28 +315,23 @@ public class ProjectService {
                 projectRepository.saveAll(projectsToUpdate);
             }
         } catch (Exception e) {
-            // Don't fail the application startup due to migration issues
             System.err.println("Warning: Project status migration failed: " + e.getMessage());
         }
     }
     
     @Transactional
     public void addProjectMember(Long projectId, Long userId, String roleInProject) {
-        // Verify project exists
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found with id: " + projectId));
         
-        // Verify user exists
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
         
-        // Check if user is already a member of this project
         UserProjectId userProjectId = new UserProjectId(userId, projectId);
         if (userProjectRepository.existsById(userProjectId)) {
             throw new RuntimeException("User is already a member of this project");
         }
         
-        // Parse and validate role
         UserProject.ProjectRole role;
         try {
             role = UserProject.ProjectRole.valueOf(roleInProject.toUpperCase());
@@ -358,7 +339,6 @@ public class ProjectService {
             throw new RuntimeException("Invalid role: " + roleInProject);
         }
         
-        // Create user-project relationship
         UserProject userProject = UserProject.builder()
                 .id(userProjectId)
                 .user(user)
@@ -371,16 +351,13 @@ public class ProjectService {
     
     @Transactional
     public void removeProjectMember(Long projectId, Long userId) {
-        // Verify project exists
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found with id: " + projectId));
         
-        // Check if user is a member of this project
         UserProjectId userProjectId = new UserProjectId(userId, projectId);
         UserProject userProject = userProjectRepository.findById(userProjectId)
                 .orElseThrow(() -> new RuntimeException("User is not a member of this project"));
         
-        // Don't allow removing scrum masters
         if (userProject.getRoleInProject() == UserProject.ProjectRole.SCRUM_MASTER) {
             throw new RuntimeException("Cannot remove Scrum Master from project");
         }

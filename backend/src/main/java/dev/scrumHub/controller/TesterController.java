@@ -5,6 +5,7 @@ import dev.scrumHub.service.TaskService;
 import dev.scrumHub.service.ProjectService;
 import dev.scrumHub.service.UserService;
 import dev.scrumHub.service.TesterService;
+import dev.scrumHub.service.TaskCommentService;
 import dev.scrumHub.model.User;
 import dev.scrumHub.model.Task.TaskStatus;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class TesterController {
     private final ProjectService projectService;
     private final UserService userService;
     private final TesterService testerService;
+    private final TaskCommentService commentService;
 
     @GetMapping("/dashboard/stats")
     public ResponseEntity<Map<String, Object>> getTesterDashboardStats(@AuthenticationPrincipal UserDetails userDetails) {
@@ -91,14 +93,20 @@ public class TesterController {
                         .body(Map.of("message", "Status is required"));
             }
 
-            // Validate tester-allowed status transitions
             TaskResponseDto task = taskService.getTaskById(taskId);
-            if (!isValidTesterStatusTransition(task.getStatus(), statusStr)) {
+            String oldStatus = task.getStatus();
+
+            if (!isValidTesterStatusTransition(oldStatus, statusStr)) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("message", "Invalid status transition from " + task.getStatus() + " to " + statusStr));
+                        .body(Map.of("message", "Invalid status transition from " + oldStatus + " to " + statusStr));
             }
 
             TaskResponseDto updatedTask = taskService.updateTaskStatus(taskId, TaskStatus.valueOf(statusStr.toUpperCase()));
+
+            if (!oldStatus.equals(updatedTask.getStatus())) {
+                commentService.createStatusChangeComment(taskId, oldStatus, updatedTask.getStatus(), user);
+            }
+
             return ResponseEntity.ok(updatedTask);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
@@ -186,12 +194,6 @@ public class TesterController {
     }
 
     private boolean isValidTesterStatusTransition(String currentStatus, String newStatus) {
-        // Testers can transition:
-        // READY_FOR_TESTING -> IN_TESTING
-        // IN_TESTING -> TEST_PASSED
-        // IN_TESTING -> BUG_FOUND
-        // BUG_FOUND -> IN_TESTING (retest after bug fix)
-        // TEST_PASSED -> IN_TESTING (reopen if needed)
 
         switch (currentStatus) {
             case "READY_FOR_TESTING":

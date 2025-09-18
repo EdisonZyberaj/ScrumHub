@@ -92,7 +92,6 @@ const CreateTaskModal = ({ isOpen, onClose, onSubmit, projects, sprints, selecte
 
             await onSubmit(taskData);
             
-            // Reset form
             setFormData({
                 title: '',
                 description: '',

@@ -119,6 +119,31 @@ function Navbar() {
 								Home
 							</Link>
 						</div>}
+
+					{user &&
+						user.role === "PRODUCT_OWNER" &&
+						<div className="flex space-x-6">
+							<Link
+								to="/productowner"
+								className="hover:text-primary transition-colors">
+								Dashboard
+							</Link>
+							<Link
+								to="/productowner/backlog"
+								className="hover:text-primary transition-colors">
+								Product Backlog
+							</Link>
+							<Link
+								to="/productowner/epics"
+								className="hover:text-primary transition-colors">
+								Epics
+							</Link>
+							<Link
+								to="/productowner/releases"
+								className="hover:text-primary transition-colors">
+								Releases
+							</Link>
+						</div>}
 				</div>
 
 				<div className="hidden md:flex items-center space-x-4 ml-6">
@@ -229,6 +254,31 @@ function Navbar() {
 							</Link>
 							<Link to="/" className="hover:text-primary transition-colors">
 								Home
+							</Link>
+						</div>}
+
+					{user &&
+						user.role === "PRODUCT_OWNER" &&
+						<div className="flex flex-col items-center space-y-4 w-full">
+							<Link
+								to="/productowner"
+								className="hover:text-primary transition-colors">
+								Dashboard
+							</Link>
+							<Link
+								to="/productowner/backlog"
+								className="hover:text-primary transition-colors">
+								Product Backlog
+							</Link>
+							<Link
+								to="/productowner/epics"
+								className="hover:text-primary transition-colors">
+								Epics
+							</Link>
+							<Link
+								to="/productowner/releases"
+								className="hover:text-primary transition-colors">
+								Releases
 							</Link>
 						</div>}
 

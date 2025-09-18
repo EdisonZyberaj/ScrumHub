@@ -21,15 +21,9 @@ const SettingsPage = () => {
 	const handleSave = async () => {
 		try {
 			const token = localStorage.getItem("token");
-			// TODO: Uncomment when backend endpoint is ready
-			// await axios.put('http://localhost:8080/api/user/settings', settings, {
-			//   headers: { Authorization: `Bearer ${token}` }
-			// });
 			console.log("Settings saved successfully", settings);
-			// TODO: Show success message
 		} catch (error) {
 			console.error("Error saving settings:", error);
-			// TODO: Show error message
 		}
 	};
 

@@ -30,7 +30,6 @@ const ProjectManager = () => {
     const [filterStatus, setFilterStatus] = useState('all');
     const [isLoading, setIsLoading] = useState(true);
 
-    // Fetch real data from backend API
     useEffect(() => {
         const fetchProjects = async () => {
             try {
@@ -42,7 +41,7 @@ const ProjectManager = () => {
                     return;
                 }
 
-                const response = await fetch('http://localhost:8080/api/projects?activeOnly=false', {
+                const response = await fetch('http:
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -56,7 +55,6 @@ const ProjectManager = () => {
                 setProjects(projectsData);
             } catch (error) {
                 console.error('Error fetching projects:', error);
-                // Fallback to empty array on error
                 setProjects([]);
             } finally {
                 setIsLoading(false);
@@ -64,7 +62,7 @@ const ProjectManager = () => {
         };
 
         fetchProjects();
-    }, []); // Fetch once on component mount
+    }, []);
 
 
     const formatDate = (dateString) => {
@@ -112,7 +110,7 @@ const ProjectManager = () => {
     const handleCreateProject = async (projectData) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:8080/api/projects', {
+            const response = await fetch('http:
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -127,7 +125,6 @@ const ProjectManager = () => {
             }
 
             const newProject = await response.json();
-            // If showing active projects only, add to the list. Otherwise, refetch to ensure consistency
             if (filterActive === 'active' || filterActive === 'all') {
                 setProjects(prev => [newProject, ...prev]);
             }

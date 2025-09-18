@@ -53,13 +53,11 @@ public class TaskService {
 
     @Transactional
     public TaskResponseDto createTask(CreateTaskRequestDto requestDto) {
-        // Get current user from security context
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         User createdBy = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
 
-        // Check if project exists
         Project project = projectRepository.findById(requestDto.getProjectId())
                 .orElseThrow(() -> new RuntimeException("Project not found with id: " + requestDto.getProjectId()));
 
@@ -152,7 +150,6 @@ public class TaskService {
     }
 
     public List<TaskResponseDto> getCurrentSprintTasksForUser(Long userId, Long projectId) {
-        // Find current active sprint for the project
         Sprint currentSprint = null;
         if (projectId != null) {
             List<Sprint> activeSprints = sprintRepository.findByProjectIdAndStatusOrderByStartDateDesc(
@@ -161,7 +158,6 @@ public class TaskService {
                 currentSprint = activeSprints.get(0);
             }
         } else {
-            // If no project specified, find any active sprint with tasks for this user
             List<Task> userTasks = taskRepository.findByAssigneeId(userId);
             for (Task task : userTasks) {
                 if (task.getSprint() != null && task.getSprint().getStatus() == Sprint.SprintStatus.ACTIVE) {
@@ -227,22 +223,18 @@ public class TaskService {
     private List<String> generateTaskTags(Task task) {
         List<String> tags = new ArrayList<>();
         
-        // Add type-based tags
         if (task.getType() == TaskType.BUG) {
             tags.add("Bug");
         }
         
-        // Add priority-based tags
         if (task.getPriority() == TaskPriority.HIGH || task.getPriority() == TaskPriority.CRITICAL) {
             tags.add("High Priority");
         }
         
-        // Add status-based tags
         if (task.getStatus() == TaskStatus.IN_TESTING) {
             tags.add("Testing");
         }
         
-        // Add generic tags based on keywords in title/description
         String content = (task.getTitle() + " " + (task.getDescription() != null ? task.getDescription() : "")).toLowerCase();
         
         if (content.contains("frontend") || content.contains("ui") || content.contains("interface")) {

@@ -26,10 +26,8 @@ public class TesterService {
     private final TaskService taskService;
 
     public Map<String, Object> getTesterStats(Long testerId) {
-        // Get all tasks in projects where the tester is involved
         List<Task> allProjectTasks = getTasksForTesterProjects(testerId);
 
-        // Filter for testing-related tasks
         List<Task> testingTasks = allProjectTasks.stream()
                 .filter(task -> isTestingRelatedStatus(task.getStatus()))
                 .collect(Collectors.toList());
@@ -41,9 +39,8 @@ public class TesterService {
         stats.put("testPassed", testingTasks.stream().filter(t -> t.getStatus() == TaskStatus.TEST_PASSED).count());
         stats.put("bugFound", testingTasks.stream().filter(t -> t.getStatus() == TaskStatus.BUG_FOUND).count());
 
-        // Additional stats
         stats.put("totalBugs", testingTasks.stream().filter(t -> t.getStatus() == TaskStatus.BUG_FOUND).count());
-        stats.put("resolvedBugs", 0); // This would require additional tracking
+        stats.put("resolvedBugs", 0);
 
         return stats;
     }
@@ -52,17 +49,13 @@ public class TesterService {
         List<Task> tasks;
 
         if (sprintId != null) {
-            // Get all tasks in the sprint (tester should see full workflow)
             tasks = taskRepository.findBySprintIdOrderByPriorityDesc(sprintId);
         } else if (projectId != null) {
-            // Get all tasks in the project
             tasks = taskRepository.findByProjectIdOrderByCreatedAtDesc(projectId);
         } else {
-            // Get tasks from all projects where tester is involved
             tasks = getTasksForTesterProjects(testerId);
         }
 
-        // Filter by status if provided
         if (status != null && !status.trim().isEmpty()) {
             TaskStatus taskStatus = TaskStatus.valueOf(status.toUpperCase());
             tasks = tasks.stream()
@@ -116,7 +109,6 @@ public class TesterService {
             throw new RuntimeException("Task must be in READY_FOR_TESTING status to start testing");
         }
 
-        // Optionally assign the task to the tester if not already assigned
         if (task.getAssignee() == null) {
             User tester = userRepository.findById(testerId)
                     .orElseThrow(() -> new RuntimeException("Tester not found"));
@@ -141,8 +133,6 @@ public class TesterService {
         task.setStatus(TaskStatus.TEST_PASSED);
         Task savedTask = taskRepository.save(task);
 
-        // Note: In a full implementation, you might want to save test notes
-        // This could be done through a separate TestResult entity
 
         return taskService.convertToDto(savedTask);
     }
@@ -159,8 +149,6 @@ public class TesterService {
         task.setStatus(TaskStatus.BUG_FOUND);
         Task savedTask = taskRepository.save(task);
 
-        // Note: In a full implementation, you might want to create a BugReport entity
-        // For now, we'll just change the status and could store bug details in TaskComment
 
         return taskService.convertToDto(savedTask);
     }
@@ -178,7 +166,6 @@ public class TesterService {
                     projectInfo.put("status", project.getStatus());
                     projectInfo.put("roleInProject", up.getRoleInProject());
 
-                    // Add testing-specific statistics
                     List<Task> projectTasks = taskRepository.findByProjectIdOrderByCreatedAtDesc(project.getId());
                     long testingTasks = projectTasks.stream()
                             .filter(task -> isTestingRelatedStatus(task.getStatus()))
@@ -203,11 +190,9 @@ public class TesterService {
 
         Map<String, Object> boardData = new HashMap<>();
 
-        // Group tasks by status for both scrum and testing boards
         Map<String, List<TaskResponseDto>> tasksByStatus = groupTasksByStatus(tasks);
         boardData.put("tasksByStatus", tasksByStatus);
 
-        // Add tester-specific statistics
         Map<String, Integer> stats = new HashMap<>();
         stats.put("totalTasks", tasks.size());
         stats.put("readyForTesting", (int) tasks.stream().filter(t -> t.getStatus() == TaskStatus.READY_FOR_TESTING).count());
@@ -241,7 +226,6 @@ public class TesterService {
     private Map<String, List<TaskResponseDto>> groupTasksByStatus(List<Task> tasks) {
         Map<String, List<TaskResponseDto>> grouped = new LinkedHashMap<>();
 
-        // Initialize all status groups
         grouped.put("TO_DO", new ArrayList<>());
         grouped.put("IN_PROGRESS", new ArrayList<>());
         grouped.put("READY_FOR_TESTING", new ArrayList<>());
@@ -250,7 +234,6 @@ public class TesterService {
         grouped.put("TEST_PASSED", new ArrayList<>());
         grouped.put("DONE", new ArrayList<>());
 
-        // Group tasks by status
         for (Task task : tasks) {
             String status = task.getStatus().toString();
             TaskResponseDto taskDto = taskService.convertToDto(task);

@@ -31,14 +31,12 @@ const Developer = () => {
     readyForTesting: 0
   });
 
-  // Filters for tasks view
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [projectFilter, setProjectFilter] = useState('all');
   const [filteredTasks, setFilteredTasks] = useState([]);
 
-  // Calendar state
   const [currentDate, setCurrentDate] = useState(new Date());
 
   useEffect(() => {
@@ -101,12 +99,11 @@ const Developer = () => {
     try {
       const token = localStorage.getItem('token');
 
-      // Use the new developer-specific endpoint
       const [tasksResponse, statsResponse] = await Promise.all([
-        fetch('http://localhost:8080/api/developer/tasks', {
+        fetch('http:
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch('http://localhost:8080/api/developer/dashboard/stats', {
+        fetch('http:
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
@@ -120,7 +117,6 @@ const Developer = () => {
         const statsData = await statsResponse.json();
         setStats(statsData);
       } else {
-        // Fallback to calculating stats from tasks
         if (tasks.length > 0) {
           calculateStats(tasks);
         }
@@ -133,8 +129,7 @@ const Developer = () => {
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem('token');
-      // Fetch projects for the current user with statistics
-      const response = await fetch(`http://localhost:8080/api/projects?userId=${user.id}`, {
+      const response = await fetch(`http:
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -150,7 +145,7 @@ const Developer = () => {
   const fetchProjectData = async (projectId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/projects/${projectId}`, {
+      const response = await fetch(`http:
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -166,7 +161,7 @@ const Developer = () => {
   const fetchSprintData = async (sprintId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/sprints/${sprintId}`, {
+      const response = await fetch(`http:
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -174,7 +169,6 @@ const Developer = () => {
         const sprintData = await response.json();
         setSprint(sprintData);
       } else {
-        // If sprint doesn't exist, create a dummy sprint for display
         setSprint({
           id: sprintId,
           name: 'Default Sprint',
@@ -183,7 +177,6 @@ const Developer = () => {
       }
     } catch (error) {
       console.error('Error fetching sprint:', error);
-      // Fallback sprint
       setSprint({
         id: sprintId,
         name: 'Default Sprint',
@@ -196,8 +189,7 @@ const Developer = () => {
     try {
       const token = localStorage.getItem('token');
 
-      // Use developer-specific API with sprint and project filters
-      let url = `http://localhost:8080/api/developer/tasks?sprintId=${sprintId}`;
+      let url = `http:
       if (projectId) {
         url += `&projectId=${projectId}`;
       }
@@ -210,8 +202,7 @@ const Developer = () => {
         const tasksData = await response.json();
         setTasks(tasksData);
       } else {
-        // Fallback to get tasks by project only
-        const fallbackResponse = await fetch(`http://localhost:8080/api/developer/tasks?projectId=${projectId}`, {
+        const fallbackResponse = await fetch(`http:
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (fallbackResponse.ok) {
@@ -267,8 +258,7 @@ const Developer = () => {
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
       const token = localStorage.getItem('token');
-      // Use developer-specific endpoint which validates allowed transitions
-      const response = await fetch(`http://localhost:8080/api/developer/tasks/${taskId}/status`, {
+      const response = await fetch(`http:
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -278,7 +268,7 @@ const Developer = () => {
       });
 
       if (response.ok) {
-        fetchData(); // Refresh data
+        fetchData();
       } else {
         const errorData = await response.json();
         alert(errorData.message || 'Failed to update task status');

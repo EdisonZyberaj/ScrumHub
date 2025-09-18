@@ -66,7 +66,6 @@ const AssignTaskModal = ({ isOpen, onClose, task, teamMembers, onAssign }) => {
     const isTaskForRole = (memberRole) => {
         if (!task) return true;
         
-        // Simple role-based task assignment logic
         const taskTitle = task.title.toLowerCase();
         const taskDescription = task.description.toLowerCase();
         
@@ -87,7 +86,6 @@ const AssignTaskModal = ({ isOpen, onClose, task, teamMembers, onAssign }) => {
 
     if (!isOpen || !task) return null;
 
-    // Filter team members based on task suitability
     const suitableMembers = teamMembers.filter(member => isTaskForRole(member.role));
     const availableMembers = suitableMembers.filter(member => member.currentTasks < member.maxCapacity);
 

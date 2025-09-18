@@ -21,7 +21,6 @@ import {
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-// Utility functions (copied from ScrumMasterBoard)
 const getPriorityColor = priority => {
     switch (priority.toLowerCase()) {
         case "critical":
@@ -80,7 +79,6 @@ const calculateDaysLeft = dueDate => {
     return diffDays;
 };
 
-// Sortable Task Item Component (copied from ScrumMasterBoard)
 const SortableTaskItem = ({ task, onTaskClick, ...props }) => {
   const {
     attributes,
@@ -188,7 +186,6 @@ const SortableTaskItem = ({ task, onTaskClick, ...props }) => {
   );
 };
 
-// Column Component (copied from ScrumMasterBoard)
 const Column = ({ column, tasks, onTaskClick }) => {
   return (
     <div className="bg-gray-100 rounded-lg shadow-sm pt-4">
@@ -228,7 +225,7 @@ const TesterBoard = ({ project, sprint, tasks, navigate, onTaskClick, onUpdateSt
   const [searchTerm, setSearchTerm] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [columns, setColumns] = useState({});
-  const [boardType, setBoardType] = useState('testing'); // 'scrum' or 'testing'
+  const [boardType, setBoardType] = useState('testing');
   const [isLoading, setIsLoading] = useState(true);
 
   const sensors = useSensors(
@@ -237,7 +234,6 @@ const TesterBoard = ({ project, sprint, tasks, navigate, onTaskClick, onUpdateSt
   );
 
   useEffect(() => {
-    // Process tasks into board structure (similar to ScrumMasterBoard)
     const processTasksIntoBoard = () => {
       const processedTasks = {};
       let taskCounter = 1;
@@ -265,7 +261,6 @@ const TesterBoard = ({ project, sprint, tasks, navigate, onTaskClick, onUpdateSt
         });
       };
 
-      // Group tasks by status
       const tasksByStatus = {
         TO_DO: tasks.filter(task => task.status === 'TO_DO'),
         IN_PROGRESS: tasks.filter(task => task.status === 'IN_PROGRESS'),
@@ -433,7 +428,6 @@ const TesterBoard = ({ project, sprint, tasks, navigate, onTaskClick, onUpdateSt
       return;
     }
 
-    // Convert task format to match expectations
     const formattedTask = {
       ...task,
       status: getTaskStatus(task),

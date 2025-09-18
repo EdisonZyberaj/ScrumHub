@@ -81,7 +81,6 @@ const DeveloperDashboard = ({ stats, projects, tasks, onTaskClick, onUpdateStatu
                 key={project.id}
                 className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-all hover:shadow-md"
                 onClick={() => {
-                  // Use activeSprint if available, otherwise use the first sprint or create a dummy one
                   const sprintId = project.activeSprint?.id || project.sprints?.[0]?.id || 1;
                   navigate(`/developer/board/${project.id}/${sprintId}`);
                 }}

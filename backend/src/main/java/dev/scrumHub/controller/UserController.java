@@ -49,12 +49,10 @@ public class UserController {
             User currentUser = userService.findByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // Update user fields with validation
             if (updateRequest.getFullName() != null && !updateRequest.getFullName().trim().isEmpty()) {
                 currentUser.setFullName(updateRequest.getFullName().trim());
             }
             if (updateRequest.getUsername() != null && !updateRequest.getUsername().trim().isEmpty()) {
-                // Check if username is already taken by another user
                 if (userService.existsByUsernameAndNotId(updateRequest.getUsername(), currentUser.getId())) {
                     return ResponseEntity.badRequest().build();
                 }
@@ -78,17 +76,14 @@ public class UserController {
             User currentUser = userService.findByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // Verify current password
             if (!passwordEncoder.matches(passwordChangeRequest.getCurrentPassword(), currentUser.getPassword())) {
                 return ResponseEntity.badRequest().body("Current password is incorrect");
             }
 
-            // Validate new password confirmation
             if (!passwordChangeRequest.getNewPassword().equals(passwordChangeRequest.getConfirmNewPassword())) {
                 return ResponseEntity.badRequest().body("New passwords do not match");
             }
 
-            // Update password
             currentUser.setPassword(passwordEncoder.encode(passwordChangeRequest.getNewPassword()));
             userService.save(currentUser);
 
@@ -117,7 +112,6 @@ public class UserController {
             User currentUser = userService.findByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // Get recent activity (tasks, comments, time logs)
             var recentActivity = userService.getRecentUserActivity(currentUser.getId());
             return ResponseEntity.ok(recentActivity);
         } catch (Exception e) {

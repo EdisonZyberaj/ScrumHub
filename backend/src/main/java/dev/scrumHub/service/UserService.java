@@ -93,7 +93,6 @@ public class UserService implements UserDetailsService {
         dev.scrumHub.model.User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Return a summary of recent activity
         return java.util.Map.of(
                 "recentTasks", user.getAssignedTasks().stream()
                         .sorted((t1, t2) -> t2.getCreatedAt().compareTo(t1.getCreatedAt()))

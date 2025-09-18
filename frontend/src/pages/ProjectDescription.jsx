@@ -26,7 +26,6 @@ function ProjectDescription({ projectId }) {
 				}
 
 				try {
-					// duhet te behet lidhje reale me back
 					const mockProject = {
 						id: projectId || 1,
 						name: "ScrumHub: Project Management Tool",

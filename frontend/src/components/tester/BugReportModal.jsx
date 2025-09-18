@@ -37,9 +37,7 @@ const BugReportModal = ({ showModal, task, onClose, onSubmit }) => {
     try {
       const token = localStorage.getItem('token');
 
-      // For now, we'll just update the task status to BUG_FOUND
-      // In a full implementation, this would create a bug report record
-      const response = await fetch(`http://localhost:8080/api/tasks/${task.id}/status`, {
+      const response = await fetch(`http:
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -49,7 +47,6 @@ const BugReportModal = ({ showModal, task, onClose, onSubmit }) => {
       });
 
       if (response.ok) {
-        // In a full implementation, save bug report details here
         console.log('Bug report submitted:', bugReport);
         onSubmit();
       } else {

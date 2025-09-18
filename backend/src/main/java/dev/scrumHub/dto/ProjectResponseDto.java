@@ -22,11 +22,10 @@ public class ProjectResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
-    // Additional computed fields for frontend
     private int memberCount;
     private int sprintCount;
     private int completedTasks;
     private int totalTasks;
-    private String status; // active, completed, on-hold
+    private String status;
     private SprintResponseDto activeSprint;
 }

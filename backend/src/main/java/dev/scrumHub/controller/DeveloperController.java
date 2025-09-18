@@ -4,6 +4,7 @@ import dev.scrumHub.dto.TaskResponseDto;
 import dev.scrumHub.service.TaskService;
 import dev.scrumHub.service.ProjectService;
 import dev.scrumHub.service.UserService;
+import dev.scrumHub.service.TaskCommentService;
 import dev.scrumHub.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ public class DeveloperController {
     private final TaskService taskService;
     private final ProjectService projectService;
     private final UserService userService;
+    private final TaskCommentService commentService;
 
     @GetMapping("/dashboard/stats")
     public ResponseEntity<Map<String, Object>> getDashboardStats(@AuthenticationPrincipal UserDetails userDetails) {
@@ -63,7 +65,6 @@ public class DeveloperController {
             tasks = taskService.getTasksByAssigneeId(user.getId());
         }
 
-        // Filter by status if provided
         if (status != null && !status.trim().isEmpty()) {
             tasks = tasks.stream()
                     .filter(task -> status.equalsIgnoreCase(task.getStatus()))
@@ -101,21 +102,26 @@ public class DeveloperController {
                         .body(Map.of("message", "Status is required"));
             }
 
-            // Validate that this task is assigned to the current user
             TaskResponseDto task = taskService.getTaskById(taskId);
             if (task.getAssigneeId() == null || !task.getAssigneeId().equals(user.getId())) {
                 return ResponseEntity.badRequest()
                         .body(Map.of("message", "You can only update status of tasks assigned to you"));
             }
 
-            // Validate developer-allowed status transitions
-            if (!isValidDeveloperStatusTransition(task.getStatus(), statusStr)) {
+            String oldStatus = task.getStatus();
+
+            if (!isValidDeveloperStatusTransition(oldStatus, statusStr)) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("message", "Invalid status transition from " + task.getStatus() + " to " + statusStr));
+                        .body(Map.of("message", "Invalid status transition from " + oldStatus + " to " + statusStr));
             }
 
             TaskResponseDto updatedTask = taskService.updateTaskStatus(taskId,
                     dev.scrumHub.model.Task.TaskStatus.valueOf(statusStr.toUpperCase()));
+
+            if (!oldStatus.equals(updatedTask.getStatus())) {
+                commentService.createStatusChangeComment(taskId, oldStatus, updatedTask.getStatus(), user);
+            }
+
             return ResponseEntity.ok(updatedTask);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
@@ -127,11 +133,6 @@ public class DeveloperController {
     }
 
     private boolean isValidDeveloperStatusTransition(String currentStatus, String newStatus) {
-        // Developers can transition:
-        // TO_DO -> IN_PROGRESS
-        // IN_PROGRESS -> READY_FOR_TESTING
-        // BUG_FOUND -> IN_PROGRESS
-        // IN_PROGRESS -> TO_DO (if they need to step back)
 
         switch (currentStatus) {
             case "TO_DO":
@@ -141,7 +142,7 @@ public class DeveloperController {
             case "BUG_FOUND":
                 return "IN_PROGRESS".equals(newStatus);
             case "READY_FOR_TESTING":
-                return "IN_PROGRESS".equals(newStatus); // Can pull back from testing if needed
+                return "IN_PROGRESS".equals(newStatus);
             default:
                 return false;
         }

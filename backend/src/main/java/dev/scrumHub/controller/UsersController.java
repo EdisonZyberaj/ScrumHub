@@ -32,7 +32,6 @@ public class UsersController {
         if (projectId != null) {
             users = userService.findByProjectId(projectId);
         } else if (role != null) {
-            // Handle multiple roles separated by comma (e.g., "DEVELOPER,TESTER")
             String[] roles = role.split(",");
             List<UserRole> userRoles = Arrays.stream(roles)
                     .map(r -> UserRole.valueOf(r.trim().toUpperCase()))

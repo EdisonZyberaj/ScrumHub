@@ -21,21 +21,19 @@ const ProjectSettingsModal = ({ isOpen, onClose, project, onUpdate }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [projectStatus, setProjectStatus] = useState(project?.status || 'active');
 
-    // Fetch project members and available users
     useEffect(() => {
         if (isOpen && project && project.id) {
             fetchProjectMembers();
             fetchAvailableUsers();
             setProjectStatus(project.status || 'active');
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, project]);
 
     const fetchProjectMembers = async () => {
         try {
             setIsLoading(true);
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:8080/api/users?projectId=${project.id}`, {
+            const response = await fetch(`http:
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -60,7 +58,7 @@ const ProjectSettingsModal = ({ isOpen, onClose, project, onUpdate }) => {
     const fetchAvailableUsers = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:8080/api/users?role=DEVELOPER,TESTER', {
+            const response = await fetch('http:
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -85,7 +83,7 @@ const ProjectSettingsModal = ({ isOpen, onClose, project, onUpdate }) => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:8080/api/projects/${project.id}/members`, {
+            const response = await fetch(`http:
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -112,7 +110,7 @@ const ProjectSettingsModal = ({ isOpen, onClose, project, onUpdate }) => {
     const handleRemoveMember = async (userId) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:8080/api/projects/${project.id}/members/${userId}`, {
+            const response = await fetch(`http:
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -133,7 +131,7 @@ const ProjectSettingsModal = ({ isOpen, onClose, project, onUpdate }) => {
     const handleStatusChange = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:8080/api/projects/${project.id}/status`, {
+            const response = await fetch(`http:
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -183,7 +181,6 @@ const ProjectSettingsModal = ({ isOpen, onClose, project, onUpdate }) => {
         }
     };
 
-    // Filter available users to exclude those already in the project
     const filteredAvailableUsers = availableUsers
         .filter(user => !projectMembers.some(member => member.id === user.id));
 
