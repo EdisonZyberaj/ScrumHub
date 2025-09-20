@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class UserProject {
+
     @EmbeddedId
     private UserProjectId id;
 
@@ -31,13 +32,16 @@ public class UserProject {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role_in_project", nullable = false)
-    private ProjectRole roleInProject;
+    private ProjectRole roleInProject = ProjectRole.DEVELOPER;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(name = "joined_at", updatable = false)
     private LocalDateTime joinedAt;
 
+    @Column(name = "is_active")
+    private boolean isActive = true;
+
     public enum ProjectRole {
-        SCRUM_MASTER, DEVELOPER, TESTER
+        SCRUM_MASTER, PRODUCT_OWNER, DEVELOPER, TESTER
     }
 }

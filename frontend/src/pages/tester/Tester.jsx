@@ -5,8 +5,6 @@ import Footer from '../../components/shared/Footer';
 import TesterDashboard from '../../components/tester/TesterDashboard';
 import TasksToTest from '../../components/tester/TasksToTest';
 import TesterBoard from '../../components/tester/TesterBoard';
-import BugReports from '../../components/tester/BugReports';
-import TestCases from '../../components/tester/TestCases';
 import TaskTestModal from '../../components/tester/TaskTestModal';
 import BugReportModal from '../../components/tester/BugReportModal';
 
@@ -19,8 +17,7 @@ const Tester = () => {
   const [currentView, setCurrentView] = useState('dashboard');
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [project, setProject] = useState(null);
-  const [sprint, setSprint] = useState(null);
+  const [boardData, setBoardData] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showBugModal, setShowBugModal] = useState(false);
@@ -63,10 +60,6 @@ const Tester = () => {
     const path = location.pathname;
     if (path.includes('/tasks')) {
       setCurrentView('tasks');
-    } else if (path.includes('/bugs')) {
-      setCurrentView('bugs');
-    } else if (path.includes('/testcases')) {
-      setCurrentView('testcases');
     } else if (path.includes('/board') && projectId && sprintId) {
       setCurrentView('board');
     } else {
@@ -81,11 +74,7 @@ const Tester = () => {
       if (!token || !user?.id) return;
 
       if (currentView === 'board' && projectId && sprintId) {
-        await Promise.all([
-          fetchProjectData(projectId),
-          fetchSprintData(sprintId),
-          fetchSprintTasks(sprintId)
-        ]);
+        await fetchTesterBoard(projectId, sprintId);
       } else {
         await Promise.all([
           fetchTasksToTest(),
@@ -102,39 +91,40 @@ const Tester = () => {
 
   const fetchTasksToTest = async () => {
     try {
-      const sampleProjectId = 1;
-      const sampleSprintId = 1;
-
-      const response = await fetch(`http:
+      const response = await fetch(`http://localhost:8080/api/tester/tasks`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
 
       if (response.ok) {
-        const boardData = await response.json();
-        const allTasks = [];
-        Object.values(boardData.tasksByStatus || {}).forEach(statusTasks => {
-          if (Array.isArray(statusTasks)) {
-            allTasks.push(...statusTasks);
-          }
-        });
-        setTasks(allTasks);
+        const tasksData = await response.json();
+        setTasks(tasksData);
+      } else {
+        console.error('Failed to fetch tasks:', response.status);
+        setTasks([]);
       }
     } catch (error) {
       console.error('Error fetching tasks to test:', error);
+      setTasks([]);
     }
   };
 
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http:
+      const response = await fetch(`http://localhost:8080/api/tester/projects`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
       if (response.ok) {
         const projectsData = await response.json();
         setProjects(projectsData);
+      } else {
+        console.error('Failed to fetch projects:', response.status);
+        setProjects([]);
       }
     } catch (error) {
       console.error('Error fetching projects:', error);
+      setProjects([]);
     }
   };
 
@@ -142,69 +132,59 @@ const Tester = () => {
     try {
       const token = localStorage.getItem('token');
 
-      const tasksResponse = await fetch(`http:
+      const tasksResponse = await fetch(`http://localhost:8080/api/tester/dashboard/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
       if (tasksResponse.ok) {
-        const allTasks = await tasksResponse.json();
-        calculateTesterStats(allTasks);
+        const statsData = await tasksResponse.json();
+        setStats(statsData);
+      } else {
+        console.error('Failed to fetch stats:', tasksResponse.status);
+        setStats({
+          totalTasks: 0,
+          readyForTesting: 0,
+          inTesting: 0,
+          testPassed: 0,
+          bugFound: 0,
+          totalBugs: 0,
+          resolvedBugs: 0
+        });
       }
     } catch (error) {
       console.error('Error fetching tester stats:', error);
+      setStats({
+        totalTasks: 0,
+        readyForTesting: 0,
+        inTesting: 0,
+        testPassed: 0,
+        bugFound: 0,
+        totalBugs: 0,
+        resolvedBugs: 0
+      });
     }
   };
 
-  const fetchProjectData = async (projectId) => {
+  const fetchTesterBoard = async (projectId, sprintId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http:
+      const response = await fetch(`http://localhost:8080/api/tester/board?projectId=${projectId}&sprintId=${sprintId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
       if (response.ok) {
-        const projectData = await response.json();
-        setProject(projectData);
+        const data = await response.json();
+        setBoardData(data);
+      } else {
+        console.error('Failed to fetch board data:', response.status);
+        setBoardData(null);
       }
     } catch (error) {
-      console.error('Error fetching project:', error);
+      console.error('Error fetching tester board:', error);
+      setBoardData(null);
     }
   };
 
-  const fetchSprintData = async (sprintId) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http:
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (response.ok) {
-        const sprintData = await response.json();
-        setSprint(sprintData);
-      }
-    } catch (error) {
-      console.error('Error fetching sprint:', error);
-    }
-  };
-
-  const fetchSprintTasks = async (sprintId) => {
-    try {
-      const response = await fetch(`http:
-
-      if (response.ok) {
-        const boardData = await response.json();
-        const allTasks = [];
-        Object.values(boardData.tasksByStatus || {}).forEach(statusTasks => {
-          if (Array.isArray(statusTasks)) {
-            allTasks.push(...statusTasks);
-          }
-        });
-        setTasks(allTasks);
-      }
-    } catch (error) {
-      console.error('Error fetching sprint tasks:', error);
-    }
-  };
 
   const calculateTesterStats = (tasksData) => {
     const stats = {
@@ -253,7 +233,7 @@ const Tester = () => {
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http:
+      const response = await fetch(`http://localhost:8080/api/tester/tasks/${taskId}/status`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -304,19 +284,15 @@ const Tester = () => {
       case 'board':
         return (
           <TesterBoard
-            project={project}
-            sprint={sprint}
-            tasks={tasks}
-            navigate={navigate}
+            boardData={boardData}
+            projectId={projectId}
+            sprintId={sprintId}
             onTaskClick={handleTaskClick}
             onUpdateStatus={updateTaskStatus}
             onReportBug={handleReportBug}
+            navigate={navigate}
           />
         );
-      case 'bugs':
-        return <BugReports />;
-      case 'testcases':
-        return <TestCases />;
       default:
         return (
           <TesterDashboard
@@ -338,7 +314,7 @@ const Tester = () => {
         <Navbar />
         <main className="flex-grow container mx-auto px-4 py-8">
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-dark"></div>
           </div>
         </main>
         <Footer />

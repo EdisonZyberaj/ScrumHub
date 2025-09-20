@@ -17,7 +17,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/sprints")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:5177", "http://localhost:5178"})
 public class SprintController {
 
     private final SprintService sprintService;

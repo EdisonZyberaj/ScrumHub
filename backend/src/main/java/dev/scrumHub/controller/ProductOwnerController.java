@@ -15,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/product-owner")
 @RequiredArgsConstructor
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:5177", "http://localhost:5178"})
 @PreAuthorize("hasRole('PRODUCT_OWNER')")
 public class ProductOwnerController {
 

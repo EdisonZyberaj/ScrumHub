@@ -36,7 +36,7 @@ const ProfilePage = () => {
 			try {
 				const token = localStorage.getItem("token");
 				const response = await axios.get(
-					"http:
+					"http://localhost:8080/api/user/profile",
 					{
 						headers: { Authorization: `Bearer ${token}` }
 					}
@@ -62,7 +62,7 @@ const ProfilePage = () => {
 		try {
 			const token = localStorage.getItem("token");
 			const response = await axios.get(
-				"http:
+				"http://localhost:8080/api/user/statistics",
 				{
 					headers: { Authorization: `Bearer ${token}` }
 				}
@@ -77,7 +77,7 @@ const ProfilePage = () => {
 		try {
 			const token = localStorage.getItem("token");
 			const response = await axios.get(
-				"http:
+				"http://localhost:8080/api/user/activity",
 				{
 					headers: { Authorization: `Bearer ${token}` }
 				}
@@ -96,7 +96,7 @@ const ProfilePage = () => {
 				fullName: formData.fullName,
 				username: formData.username
 			};
-			const response = await axios.put("http:
+			const response = await axios.put("http://localhost:8080/api/user/profile", updateData, {
 				headers: { Authorization: `Bearer ${token}` }
 			});
 			setUser(response.data);
@@ -120,7 +120,7 @@ const ProfilePage = () => {
 
 		try {
 			const token = localStorage.getItem("token");
-			await axios.post("http:
+			await axios.post("http://localhost:8080/api/user/change-password", passwordData, {
 				headers: { Authorization: `Bearer ${token}` }
 			});
 			setPasswordData({
@@ -141,7 +141,7 @@ const ProfilePage = () => {
 	if (loading)
 		return (
 			<div className="flex items-center justify-center min-h-screen">
-				<div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600" />
+				<div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-dark" />
 			</div>
 		);
 
@@ -154,7 +154,7 @@ const ProfilePage = () => {
 					<div className="bg-white rounded-xl shadow-sm p-8 mb-6">
 						<div className="flex items-center justify-between mb-6">
 							<div className="flex items-center space-x-3">
-								<div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+								<div className="w-12 h-12 bg-dark rounded-full flex items-center justify-center">
 									<User className="w-6 h-6 text-white" />
 								</div>
 								<div>
@@ -186,7 +186,7 @@ const ProfilePage = () => {
 								onClick={() => setActiveTab("profile")}
 								className={`py-2 px-4 font-medium ${
 									activeTab === "profile"
-										? "text-blue-600 border-b-2 border-blue-600"
+										? "text-dark border-b-2 border-dark"
 										: "text-gray-600 hover:text-gray-900"
 								}`}>
 								<User className="w-4 h-4 inline mr-2" />
@@ -199,7 +199,7 @@ const ProfilePage = () => {
 								}}
 								className={`py-2 px-4 font-medium ${
 									activeTab === "statistics"
-										? "text-blue-600 border-b-2 border-blue-600"
+										? "text-dark border-b-2 border-dark"
 										: "text-gray-600 hover:text-gray-900"
 								}`}>
 								<BarChart3 className="w-4 h-4 inline mr-2" />
@@ -212,7 +212,7 @@ const ProfilePage = () => {
 								}}
 								className={`py-2 px-4 font-medium ${
 									activeTab === "activity"
-										? "text-blue-600 border-b-2 border-blue-600"
+										? "text-dark border-b-2 border-dark"
 										: "text-gray-600 hover:text-gray-900"
 								}`}>
 								<Activity className="w-4 h-4 inline mr-2" />
@@ -222,7 +222,7 @@ const ProfilePage = () => {
 								onClick={() => setActiveTab("security")}
 								className={`py-2 px-4 font-medium ${
 									activeTab === "security"
-										? "text-blue-600 border-b-2 border-blue-600"
+										? "text-dark border-b-2 border-dark"
 										: "text-gray-600 hover:text-gray-900"
 								}`}>
 								<Lock className="w-4 h-4 inline mr-2" />
@@ -239,7 +239,7 @@ const ProfilePage = () => {
 									<h2 className="text-xl font-semibold text-gray-900">Profile Information</h2>
 									<button
 										onClick={() => setIsEditing(!isEditing)}
-										className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+										className="px-4 py-2 bg-dark text-white rounded-lg hover:bg-accent">
 										{isEditing ? "Cancel" : "Edit Profile"}
 									</button>
 								</div>
@@ -255,7 +255,7 @@ const ProfilePage = () => {
 											onChange={e =>
 												setFormData({ ...formData, username: e.target.value })}
 											disabled={!isEditing}
-											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark disabled:bg-gray-100"
 										/>
 									</div>
 
@@ -269,7 +269,7 @@ const ProfilePage = () => {
 											onChange={e =>
 												setFormData({ ...formData, fullName: e.target.value })}
 											disabled={!isEditing}
-											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark disabled:bg-gray-100"
 										/>
 									</div>
 
@@ -307,7 +307,7 @@ const ProfilePage = () => {
 										<div className="flex space-x-4">
 											<button
 												onClick={handleSave}
-												className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+												className="flex items-center px-4 py-2 bg-dark text-white rounded-lg hover:bg-accent">
 												<Save className="w-4 h-4 mr-2" />
 												Save Changes
 											</button>
@@ -361,7 +361,7 @@ const ProfilePage = () => {
 									</div>
 								) : (
 									<div className="flex items-center justify-center py-8">
-										<div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-t-blue-600" />
+										<div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-t-dark" />
 									</div>
 								)}
 							</div>
@@ -428,7 +428,7 @@ const ProfilePage = () => {
 									</div>
 								) : (
 									<div className="flex items-center justify-center py-8">
-										<div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-t-blue-600" />
+										<div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-t-dark" />
 									</div>
 								)}
 							</div>
@@ -446,7 +446,7 @@ const ProfilePage = () => {
 										</div>
 										<button
 											onClick={() => setShowPasswordForm(!showPasswordForm)}
-											className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+											className="px-4 py-2 bg-dark text-white rounded-lg hover:bg-accent">
 											Change Password
 										</button>
 									</div>
@@ -464,7 +464,7 @@ const ProfilePage = () => {
 														onChange={e =>
 															setPasswordData({ ...passwordData, currentPassword: e.target.value })}
 														required
-														className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+														className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark"
 													/>
 													<button
 														type="button"
@@ -487,7 +487,7 @@ const ProfilePage = () => {
 															setPasswordData({ ...passwordData, newPassword: e.target.value })}
 														required
 														minLength="8"
-														className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+														className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark"
 													/>
 													<button
 														type="button"
@@ -509,7 +509,7 @@ const ProfilePage = () => {
 														onChange={e =>
 															setPasswordData({ ...passwordData, confirmNewPassword: e.target.value })}
 														required
-														className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+														className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark"
 													/>
 													<button
 														type="button"
@@ -523,7 +523,7 @@ const ProfilePage = () => {
 											<div className="flex space-x-4">
 												<button
 													type="submit"
-													className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+													className="px-4 py-2 bg-dark text-white rounded-lg hover:bg-accent">
 													Update Password
 												</button>
 												<button

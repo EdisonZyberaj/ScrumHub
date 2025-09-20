@@ -21,7 +21,7 @@ const WorkloadCalendar = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http:
+      const response = await fetch('http://localhost:8080/api/tasks', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -132,13 +132,13 @@ const WorkloadCalendar = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      
       <div>
         <h1 className="text-2xl font-bold text-gray-900">My Workload Calendar</h1>
         <p className="text-gray-600">Track your tasks and deadlines</p>
       </div>
 
-      {/* Calendar Controls */}
+    
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
@@ -175,16 +175,16 @@ const WorkloadCalendar = () => {
           </div>
         </div>
 
-        {/* Calendar Grid */}
+        
         <div className="grid grid-cols-7 gap-1">
-          {/* Days of week header */}
+          
           {daysOfWeek.map(day => (
             <div key={day} className="p-3 text-center font-medium text-gray-500 border-b">
               {day}
             </div>
           ))}
 
-          {/* Calendar days */}
+         
           {days.map((dayInfo, index) => {
             const dayTasks = getTasksForDate(dayInfo.date);
             const isCurrentMonth = dayInfo.isCurrentMonth;
@@ -228,7 +228,7 @@ const WorkloadCalendar = () => {
         </div>
       </div>
 
-      {/* Selected Date Details */}
+      
       {selectedDate && (
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center space-x-2">
@@ -287,7 +287,7 @@ const WorkloadCalendar = () => {
         </div>
       )}
 
-      {/* Weekly Summary */}
+      
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h3 className="text-lg font-semibold mb-4">This Week's Workload</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

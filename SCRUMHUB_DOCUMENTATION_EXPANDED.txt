@@ -1,0 +1,156 @@
+=====================================================================
+                    APLIKACIONI SCRUMHUB - DOKUMENTIMI I PLOTË
+=====================================================================
+
+4.1 STRUKTURA E APLIKACIONIT
+
+Aplikacioni ScrumHub është ndërtuar me arkitekturën moderne full-stack që kombinon React frontend me Spring Boot backend. Kjo strukturë siguron ndarjen e qartë të përgjegjësive dhe skalabilitetin e aplikacionit.
+
+1. src/: Kjo direktori përmban kodin kryesor të aplikacionit frontend, duke përfshirë komponentët React, faqet, shërbimet dhe konfigurimin e aplikacionit. Organizimi i kodit në këtë direktori ndjek praktikat më të mira të React development.
+
+2. src/components/: Këtu kemi të gjithë komponentët e aplikacionit të organizuar sipas roleve dhe funksionaliteteve specifike. Çdo subdirektori përmban komponentët që i përkasin një roli të caktuar ose funksionaliteti të përbashkët.
+
+3. src/pages/: Ky direktori përmban faqet kryesore të aplikacionit që korrespondojnë me rrugët e navigimit. Çdo faqe përbëhet nga komponentë të shumtë të kombinuar për të krijuar eksperiencën e plotë të përdoruesit.
+
+4. src/services/: Këtu ndodhen shërbimet për komunikimin me backend API-në. Kjo shtresë abstrakton thirrjet HTTP dhe siguron menaxhimin e centralizuar të komunikimit me serverin.
+
+5. public/: Ky është vendi ku vendosen skedarët statikë që janë të aksesueshëm direkt nga shfletuesi, si ikonat, imazhet dhe fajlli kryesor index.html që ngarkojë aplikacionin React.
+
+6. backend/src/main/java/: Direktoria kryesore e kodit Java që përmban të gjithë logjikën e serverit të organizuar në paketa të specializuara për funksionalitete të ndryshme.
+
+7. controller/: Ky direktori përmban REST API kontrollerët që menaxhojnë kërkesat HTTP nga frontend dhe koordinojnë përgjigjet. Çdo kontroller përqendrohet në një domain specifik të aplikacionit.
+
+8. service/: Këtu implementohet logjika e biznesit të aplikacionit që përpunon të dhënat dhe zbaton rregullat e biznesit. Shërbimet janë të pavarura nga detajet e implementimit të databazës.
+
+9. repository/: Ky direktori përmban interfejsat për aksesin në bazën e të dhënave duke përdorur Spring Data JPA. Repositorët abstraktorjnë operacionet CRUD dhe query të ndërlikuara.
+
+10. model/: Këtu ndodhen entitetet e bazës së të dhënave që përfaqësojnë strukturën e të dhënave të aplikacionit dhe relacionet midis tyre.
+
+4.2 DATABAZA (TABELAT)
+
+Databaza e aplikacionit është projektuar për të mbështetur plotësisht metodologjinë Agile dhe Scrum. Të gjitha tabelat janë të optimizuara për performancë dhe integretin e të dhënave.
+
+1. Tabela users:
+   • Regjistron të dhënat personale dhe profesionale të të gjithë përdoruesve të sistemit.
+   • Përmban fushat kryesore si id, username, email, password, fullName, role dhe status aktiv.
+
+2. Tabela projects:
+   • Menaxhon informacionin për të gjithë projektet aktive dhe të përfunduara në sistem.
+   • Çdo projekt ka emër unik, përshkrim, çelës identifikues dhe data fillimi e mbarimi.
+
+3. Tabela tasks:
+   • Përmban të gjitha detyrat e projekteve me detaje të plota për menaxhimin e punës.
+   • Mbështet workflow të plotë nga krijimi deri në kompletimin e detyrave.
+
+4. Tabela sprints:
+   • Regjistron sprint-et e projekteve me objektiva dhe afate të qarta.
+   • Lejon planifikimin dhe monitorimin e cikleve të punës në periudha të shkurtra.
+
+5. Tabela epics:
+   • Menaxhon karakteristikat e mëdha që ndahen në detyra më të vogla.
+   • Ndihmon në organizimin hierarkik të punës dhe prioritizimin strategjik.
+
+6. Tabela product_backlog_items:
+   • Përmban të gjithë artikujt e backlog-ut me prioritete dhe përshkrime të detajuara.
+   • E rëndësishme për Product Owner në menaxhimin e kërkesave.
+
+7. Tabela test_cases:
+   • Dokumenton rastet e testimit për çdo detyrë me rezultate të pritura dhe aktuale.
+   • Mbështet proceset sistematike të Quality Assurance.
+
+8. Tabela bug_reports:
+   • Regjistron të gjithë defektet e identifikuara me nivele serioziteti dhe status zgjidhje.
+   • Lejon ndjekjen e problemeve nga identifikimi deri në zgjidhjen finale.
+
+9. Tabela task_comments:
+   • Mundëson komunikimin dhe bashkëpunimin rreth detyrave specifike.
+   • Ruan historinë e diskutimeve dhe vendimeve të marra.
+
+10. Tabela user_projects:
+    • Lidh përdoruesit me projektet dhe përcakton rolet e tyre në çdo projekt.
+    • Mundëson pjesëmarrjen e përdoruesve në projekte të shumta simultanisht.
+
+4.3 AUTENTIFIKIMI
+
+Sistemi i autentifikimit të ScrumHub bazohet në teknologjinë JWT (JSON Web Tokens) që siguron komunikim të sigurt dhe efficient midis frontend dhe backend komponentëve. Implementimi përdor Spring Security framework për kontrollin e aksesit dhe mbrojtjen e resurseve.
+
+Procesi i autentifikimit fillon me validimin e kredencialeve të përdoruesit përmes email dhe password. Passwordet ruhen të hash-uara duke përdorur algoritmin BCrypt që siguron mbrojtje të fortë kundër sulmeve. Pas verifikimit të suksesshëm, sistemi gjeneron një JWT token që përmban informacionin e enkriptuar të përdoruesit.
+
+Token-et kanë kohë skadimi të përcaktuar dhe duhen rinovuar periodikisht për të ruajtur sigurinë. Sistemi implementon gjithashtu role-based access control që siguron se çdo përdorues mund të aksesojë vetëm funksionalitetet që i përkasin rolit të tij specifik.
+
+CORS konfigurimi lejon komunikimin e sigurt midis frontend dhe backend aplikacioneve që ekzekutohen në porte të ndryshme gjatë zhvillimit dhe production. Kjo siguron fleksibilitetin e deployment-it pa kompromentuar sigurinë.
+
+4.4 IMPLEMENTIMI I CHAT-BOT
+
+Aktualisht aplikacioni ScrumHub nuk ka implementuar një chat-bot të integruar, megjithatë arkitektura e sistemit është e përgatitur për shtimin e kësaj funksionaliteti në të ardhmen.
+
+Implementimi i një chat-bot do të mund të integrohet me sistemin ekzistues të menaxhimit të detyrave për të ofruar ndihmë automatike në planifikimin e sprint-eve, sugjerimet për optimizimin e punës dhe përgjigje të shpejta për pyetje të zakonshme.
+
+Teknologjitë e rekomanduara për implementim përfshijnë WebSocket për komunikim real-time dhe integrimin me shërbime AI si OpenAI ose Dialogflow për përpunimin e gjuhës natyrore. Chat-bot-i mund të konfigurojë për të dhënë përgjigje të personalizuara bazuar në rolin e përdoruesit dhe kontekstin e projektit.
+
+4.5 PËRSHKRIM I FUNKSIONALITETEVE DHE ROLEVE
+
+ScrumHub mbështet pesë role kryesore përdoruesish, secili me funksionalitete të specializuara për të optimizuar workflow-n e zhvillimit Agile.
+
+PRODUCT OWNER:
+
+• Menaxhimi i Product Backlog: Product Owner ka kontroll të plotë mbi krijimin, editimin dhe prioritizimin e artikujve të backlog-ut. Kjo përfshin aftësinë për të përcaktuar user stories me kritere pranueshmërie të qarta.
+
+• Krijimi dhe menaxhimi i Epic-ave: Mund të krijojë karakteristika të mëdha (epic) që ndahen më vonë në detyra më të vogla dhe të menaxhueshme.
+
+• Prioritizimi strategjik: Ka aftësinë për të riradhitur prioritetet e punës bazuar në kërkeshat e biznesit dhe feedback-un e palëve të interesuara.
+
+• Monitorimi i progresit: Mund të ndjekë progresin e implementimit të karakteristikave dhe të marrë vendime rreth ndryshimeve të scope-it.
+
+SCRUM MASTER:
+
+• Menaxhimi i projekteve: Ka akses të plotë në krijimin, konfigurimin dhe menaxhimin e projekteve duke përfshirë vendosjen e ekipeve dhe përcaktimin e objektivave.
+
+• Planifikimi i Sprint-eve: Organizon dhe drejton ceremonitë e planifikimit të sprint-eve duke ndarë punën nga backlog-u në detyra të realizueshme.
+
+• Ndarja dhe asignimi i detyrave: Distribuon detyrat tek anëtarët e ekipit bazuar në kapacitetin dhe ekspertizën e tyre.
+
+• Monitorimi dhe raportimi: Përdor dashboard-e dhe raporte për të ndjekur progresin e ekipit dhe për të identifikuar pengesat potenciale.
+
+• Lehtësimi i proceseve: Siguron që proceset Agile ndiqen siç duhet dhe ndihmon në zgjidhjen e konflikteve.
+
+DEVELOPER:
+
+• Menaxhimi i detyrave personale: Mund të shohë, përditësojë dhe menaxhojë të gjitha detyrat e caktuara duke ndryshuar statusin nga "To Do" në "Done".
+
+• Regjistrimi i kohës së punës: Ka mundësi të regjistrojë orët e punuara për çdo detyrë për ndjekjen e progresit dhe planifikimin e ardhshëm.
+
+• Kalendari i ngarkesës: Përdor workload calendar për të planifikuar punën dhe për të menaxhuar kapacitetin personal.
+
+• Komunikimi dhe bashkëpunimi: Mund të komentojë në detyra dhe të komunikojë me anëtarët e tjerë të ekipit rreth detajeve teknike.
+
+• Përditësimi i statusit: Ka përgjegjësi për të mbajtur të përditësuar statusin e detyrave në mënyrë që të gjithë ekipi të jetë i informuar.
+
+SOFTWARE TESTER:
+
+• Krijimi i test cases: Zhvillon raste testimi të detajuara për çdo detyrë duke specifikuar rezultatet e pritura dhe procedurat e testimit.
+
+• Ekzekutimi i testeve: Kryen teste sistematike dhe dokumenton rezultatet aktuale krahasuar me ato të pritura.
+
+• Raportimi i bug-eve: Identifikon dhe raporton defekte duke specifikuar nivelin e seriozitetit dhe hapat për riprodhimin.
+
+• Menaxhimi i cikleve të testimit: Koordinon procesin e testimit duke ndjekur detyrat që janë gati për testim dhe duke raportuar rezultatet.
+
+• Quality Assurance: Siguron që standardet e cilësisë respektohen përpara se produkti të konsiderohet i gatshëm.
+
+GUEST:
+
+• Akses i kufizuar për shikimin: Mund të shohë informacione të përgjithshme të projekteve pa mundësi për të bërë ndryshime.
+
+• Monitorimi read-only: Ka akses vetëm për lexim të statusit të projekteve dhe progresit të përgjithshëm pa mundësi ndërhyrje.
+
+=====================================================================
+                            PËRFUNDIM
+=====================================================================
+
+ScrumHub ofron një platformë të integruar dhe të plotë për menaxhimin e projekteve Agile që kombinon teknologjitë moderne me praktikat e provuara të industrisë software. Aplikacioni është projektuar për të mbështetur ekipe të çdo madhësie në implementimin efektiv të metodologjisë Scrum.
+
+Arkitektura e shkallëzueshme dhe sistemi i sigurisë së avancuar e bëjnë aplikacionin të përshtatshëm për përdorim në mjedise të ndryshme organizative. Funksionalitetet e specializuara për çdo rol sigurojnë që çdo anëtar i ekipit të ketë mjetet e nevojshme për të kontribuar në mënyrë optimale në suksesin e projektit.
+
+Dokumentacioni i krijuar më: 19 Dhjetor 2025
+Versioni i aplikacionit: 0.0.1-SNAPSHOT

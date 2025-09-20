@@ -11,33 +11,18 @@ import {
 } from "recharts";
 import { Calendar, AlertTriangle } from "lucide-react";
 
-function BurndownChart({ sprintId }) {
-	const mockData = [
-		{ day: "Day 1", remaining: 120, ideal: 120 },
-		{ day: "Day 2", remaining: 118, ideal: 110 },
-		{ day: "Day 3", remaining: 105, ideal: 100 },
-		{ day: "Day 4", remaining: 98, ideal: 90 },
-		{ day: "Day 5", remaining: 85, ideal: 80 },
-		{ day: "Day 6", remaining: 84, ideal: 70 },
-		{ day: "Day 7", remaining: 70, ideal: 60 },
-		{ day: "Day 8", remaining: 55, ideal: 50 },
-		{ day: "Day 9", remaining: 48, ideal: 40 },
-		{ day: "Day 10", remaining: 38, ideal: 30 },
-		{ day: "Day 11", remaining: 30, ideal: 20 },
-		{ day: "Day 12", remaining: 20, ideal: 10 },
-		{ day: "Day 13", remaining: 12, ideal: 0 },
-		{ day: "Day 14", remaining: 0, ideal: 0 }
-	];
-
-	const mockSprint = {
-		id: sprintId || 1,
-		name: "Sprint 15",
-		startDate: "2025-05-05",
-		endDate: "2025-05-19",
-		totalPoints: 120,
-		completedPoints: 85,
-		remainingPoints: 35,
-		isActive: true
+function BurndownChart({ sprintId, sprintData, burndownData }) {
+	
+	const chartData = burndownData || [];
+	const sprint = sprintData || {
+		id: sprintId || null,
+		name: "No Sprint Selected",
+		startDate: null,
+		endDate: null,
+		totalPoints: 0,
+		completedPoints: 0,
+		remainingPoints: 0,
+		isActive: false
 	};
 
 	const formatDate = dateString => {
@@ -45,47 +30,51 @@ function BurndownChart({ sprintId }) {
 		return new Date(dateString).toLocaleDateString("en-US", options);
 	};
 
-	const percentComplete = Math.round(
-		mockSprint.completedPoints / mockSprint.totalPoints * 100
-	);
+	const percentComplete = sprint.totalPoints > 0
+		? Math.round((sprint.completedPoints / sprint.totalPoints) * 100)
+		: 0;
 
 	return (
 		<div className="bg-white rounded-xl shadow-sm p-6">
 			<div className="flex justify-between items-start mb-6">
 				<div>
 					<h2 className="text-xl font-bold text-gray-800 mb-1">
-						{mockSprint.name} Burndown
+						{sprint.name} Burndown
 					</h2>
-					<div className="flex items-center text-sm text-gray-500">
-						<Calendar className="h-4 w-4 mr-1" />
-						<span>
-							{formatDate(mockSprint.startDate)} -{" "}
-							{formatDate(mockSprint.endDate)}
-						</span>
+					{sprint.startDate && sprint.endDate && (
+						<div className="flex items-center text-sm text-gray-500">
+							<Calendar className="h-4 w-4 mr-1" />
+							<span>
+								{formatDate(sprint.startDate)} -{" "}
+								{formatDate(sprint.endDate)}
+							</span>
+						</div>
+					)}
+				</div>
+				{sprint.isActive && (
+					<div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+						Active Sprint
 					</div>
-				</div>
-				<div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
-					Active Sprint
-				</div>
+				)}
 			</div>
 
 			<div className="bg-gray-50 rounded-lg p-4 mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
 				<div className="text-center">
 					<p className="text-gray-500 text-sm mb-1">Total Story Points</p>
 					<p className="text-2xl font-bold text-gray-800">
-						{mockSprint.totalPoints}
+						{sprint.totalPoints}
 					</p>
 				</div>
 				<div className="text-center">
 					<p className="text-gray-500 text-sm mb-1">Completed</p>
 					<p className="text-2xl font-bold text-green-600">
-						{mockSprint.completedPoints}
+						{sprint.completedPoints}
 					</p>
 				</div>
 				<div className="text-center">
 					<p className="text-gray-500 text-sm mb-1">Remaining</p>
 					<p className="text-2xl font-bold text-blue-600">
-						{mockSprint.remainingPoints}
+						{sprint.remainingPoints}
 					</p>
 				</div>
 			</div>
@@ -108,38 +97,48 @@ function BurndownChart({ sprintId }) {
 			</div>
 
 			<div className="h-72">
-				<ResponsiveContainer width="100%" height="100%">
-					<LineChart
-						data={mockData}
-						margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-						<CartesianGrid strokeDasharray="3 3" />
-						<XAxis dataKey="day" />
-						<YAxis />
-						<Tooltip />
-						<Legend />
-						<Line
-							type="monotone"
-							dataKey="remaining"
-							stroke="#3b82f6"
-							strokeWidth={2}
-							activeDot={{ r: 8 }}
-							name="Actual Remaining"
-						/>
-						<Line
-							type="monotone"
-							dataKey="ideal"
-							stroke="#9ca3af"
-							strokeWidth={2}
-							strokeDasharray="5 5"
-							name="Ideal Burndown"
-						/>
-					</LineChart>
-				</ResponsiveContainer>
+				{chartData.length > 0 ? (
+					<ResponsiveContainer width="100%" height="100%">
+						<LineChart
+							data={chartData}
+							margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+							<CartesianGrid strokeDasharray="3 3" />
+							<XAxis dataKey="day" />
+							<YAxis />
+							<Tooltip />
+							<Legend />
+							<Line
+								type="monotone"
+								dataKey="remaining"
+								stroke="#3b82f6"
+								strokeWidth={2}
+								activeDot={{ r: 8 }}
+								name="Actual Remaining"
+							/>
+							<Line
+								type="monotone"
+								dataKey="ideal"
+								stroke="#9ca3af"
+								strokeWidth={2}
+								strokeDasharray="5 5"
+								name="Ideal Burndown"
+							/>
+						</LineChart>
+					</ResponsiveContainer>
+				) : (
+					<div className="flex items-center justify-center h-full text-gray-500">
+						<div className="text-center">
+							<p className="text-lg mb-2">No burndown data available</p>
+							<p className="text-sm">Burndown chart will appear once sprint has started and tasks are being tracked.</p>
+						</div>
+					</div>
+				)}
 			</div>
 
-			{mockSprint.remainingPoints > 0 &&
-				mockData[mockData.length - 3].remaining >
-					mockData[mockData.length - 3].ideal &&
+			{sprint.remainingPoints > 0 &&
+				chartData.length > 3 &&
+				chartData[chartData.length - 3]?.remaining >
+					chartData[chartData.length - 3]?.ideal &&
 				<div className="mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-4 flex items-start">
 					<AlertTriangle className="h-5 w-5 text-yellow-500 mr-3 flex-shrink-0 mt-0.5" />
 					<div>

@@ -45,7 +45,7 @@ const SprintPlanning = () => {
         
         try {
             const token = localStorage.getItem('token');
-            const sprintsResponse = await fetch(`http:
+            const sprintsResponse = await fetch(`http://localhost:8080/api/sprints?projectId=${projectId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             
@@ -55,36 +55,8 @@ const SprintPlanning = () => {
                 setActiveSprint(sprintsData.find(s => s.status === 'ACTIVE'));
             } else {
                 console.error('Failed to fetch sprints:', sprintsResponse.status);
-                const mockSprints = [
-                    {
-                        id: `mock-${projectId}-1`,
-                        name: `Sprint 1 - ${projectId === 1 ? 'User Authentication' : 'Core Features'}`,
-                        goal: `Implement basic ${projectId === 1 ? 'authentication system' : 'functionality'}`,
-                        startDate: '2025-01-01T00:00:00',
-                        endDate: '2025-01-15T23:59:59',
-                        status: 'COMPLETED',
-                        active: false,
-                        totalTasks: 8,
-                        completedTasks: 8,
-                        progress: 100,
-                        projectId: projectId
-                    },
-                    {
-                        id: `mock-${projectId}-2`,
-                        name: `Sprint 2 - ${projectId === 1 ? 'Product Catalog' : 'Advanced Features'}`,
-                        goal: `Develop ${projectId === 1 ? 'product catalog' : 'advanced features'}`,
-                        startDate: '2025-01-16T00:00:00',
-                        endDate: '2025-01-30T23:59:59',
-                        status: 'ACTIVE',
-                        active: true,
-                        totalTasks: 12,
-                        completedTasks: 7,
-                        progress: 58,
-                        projectId: projectId
-                    }
-                ];
-                setSprints(mockSprints);
-                setActiveSprint(mockSprints.find(s => s.active));
+                setSprints([]);
+                setActiveSprint(null);
             }
         } catch (sprintError) {
             console.error('Error fetching sprints:', sprintError);
@@ -97,7 +69,7 @@ const SprintPlanning = () => {
         try {
             const token = localStorage.getItem('token');
             
-            const projectsResponse = await fetch('http:
+            const projectsResponse = await fetch('http://localhost:8080/api/projects', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             
@@ -108,33 +80,13 @@ const SprintPlanning = () => {
                     setSelectedProject(projectsData[0].id);
                 }
             } else {
-                const mockProjects = [
-                    { 
-                        id: 1, 
-                        name: 'E-commerce Platform', 
-                        key: 'ECOM',
-                        description: 'Online shopping platform',
-                        startDate: '2025-01-01',
-                        endDate: '2025-12-31'
-                    },
-                    { 
-                        id: 2, 
-                        name: 'Mobile Banking App', 
-                        key: 'MBA',
-                        description: 'Mobile banking application',
-                        startDate: '2025-02-01',
-                        endDate: '2025-11-30'
-                    }
-                ];
-                setProjects(mockProjects);
-                if (!selectedProject) {
-                    setSelectedProject(mockProjects[0].id);
-                }
+                console.error('Failed to fetch projects:', projectsResponse.status);
+                setProjects([]);
             }
 
             if (selectedProject) {
                 try {
-                    const sprintsResponse = await fetch(`http:
+                    const sprintsResponse = await fetch(`http://localhost:8080/api/sprints?projectId=${selectedProject}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     
@@ -144,36 +96,8 @@ const SprintPlanning = () => {
                         setActiveSprint(sprintsData.find(s => s.status === 'ACTIVE'));
                     } else {
                         console.error('Failed to fetch sprints:', sprintsResponse.status);
-                        const mockSprints = [
-                            {
-                                id: 1,
-                                name: `Sprint 1 - ${selectedProject === 1 ? 'User Authentication' : 'Core Features'}`,
-                                goal: `Implement basic ${selectedProject === 1 ? 'authentication system' : 'functionality'}`,
-                                startDate: '2025-01-01T00:00:00',
-                                endDate: '2025-01-15T23:59:59',
-                                status: 'COMPLETED',
-                                active: false,
-                                totalTasks: 8,
-                                completedTasks: 8,
-                                progress: 100,
-                                projectId: selectedProject
-                            },
-                            {
-                                id: 2,
-                                name: `Sprint 2 - ${selectedProject === 1 ? 'Product Catalog' : 'Advanced Features'}`,
-                                goal: `Develop ${selectedProject === 1 ? 'product catalog' : 'advanced features'}`,
-                                startDate: '2025-01-16T00:00:00',
-                                endDate: '2025-01-30T23:59:59',
-                                status: 'ACTIVE',
-                                active: true,
-                                totalTasks: 12,
-                                completedTasks: 7,
-                                progress: 58,
-                                projectId: selectedProject
-                            }
-                        ];
-                        setSprints(mockSprints);
-                        setActiveSprint(mockSprints.find(s => s.active));
+                        setSprints([]);
+                        setActiveSprint(null);
                     }
                 } catch (sprintError) {
                     console.error('Error fetching sprints:', sprintError);
@@ -206,7 +130,7 @@ const SprintPlanning = () => {
     const handleCreateSprint = async (sprintData) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http:
+            const response = await fetch('http://localhost:8080/api/sprints', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -236,7 +160,7 @@ const SprintPlanning = () => {
             const token = localStorage.getItem('token');
             
             if (activeSprint && activeSprint.id !== sprintId) {
-                await fetch(`http:
+                await fetch(`http://localhost:8080/api/sprints/${activeSprint.id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -246,7 +170,7 @@ const SprintPlanning = () => {
                 });
             }
 
-            const response = await fetch(`http:
+            const response = await fetch(`http://localhost:8080/api/sprints/${sprintId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -281,7 +205,7 @@ const SprintPlanning = () => {
     const handleUpdateSprintStatus = async (sprintId, isActive) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http:
+            const response = await fetch(`http://localhost:8080/api/sprints/${sprintId}`, {
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json', 

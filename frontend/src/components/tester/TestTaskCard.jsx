@@ -4,10 +4,10 @@ import { MoreHorizontal, Flag, Clock, Calendar, Play, Eye, TestTube, Bug, CheckC
 const TestTaskCard = ({ task, showProject = true, onTaskClick, onUpdateStatus, onReportBug }) => {
   const getStatusColor = (status) => {
     switch (status) {
-      case 'READY_FOR_TESTING': return 'bg-blue-100 text-blue-800';
-      case 'IN_TESTING': return 'bg-yellow-100 text-yellow-800';
-      case 'TEST_PASSED': return 'bg-green-100 text-green-800';
-      case 'BUG_FOUND': return 'bg-red-100 text-red-800';
+      case 'READY_FOR_TESTING': return 'bg-gray-100 text-dark';
+      case 'IN_TESTING': return 'bg-blue-100 text-accent';
+      case 'TEST_PASSED': return 'bg-blue-200 text-primary';
+      case 'BUG_FOUND': return 'bg-gray-200 text-dark';
       case 'DONE': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -15,10 +15,10 @@ const TestTaskCard = ({ task, showProject = true, onTaskClick, onUpdateStatus, o
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'CRITICAL': return 'text-red-700';
-      case 'HIGH': return 'text-red-600';
-      case 'MEDIUM': return 'text-yellow-600';
-      case 'LOW': return 'text-green-600';
+      case 'CRITICAL': return 'text-dark';
+      case 'HIGH': return 'text-dark';
+      case 'MEDIUM': return 'text-accent';
+      case 'LOW': return 'text-primary';
       default: return 'text-gray-600';
     }
   };
@@ -45,7 +45,7 @@ const TestTaskCard = ({ task, showProject = true, onTaskClick, onUpdateStatus, o
             status: 'IN_TESTING',
             label: 'Start Testing',
             icon: TestTube,
-            color: 'bg-blue-600 hover:bg-blue-700'
+            color: 'bg-dark hover:bg-accent'
           }
         ];
       case 'IN_TESTING':
@@ -55,14 +55,14 @@ const TestTaskCard = ({ task, showProject = true, onTaskClick, onUpdateStatus, o
             status: 'TEST_PASSED',
             label: 'Pass',
             icon: CheckCircle2,
-            color: 'bg-green-600 hover:bg-green-700'
+            color: 'bg-primary hover:bg-accent'
           },
           {
             action: 'report_bug',
             status: 'BUG_FOUND',
             label: 'Report Bug',
             icon: Bug,
-            color: 'bg-red-600 hover:bg-red-700'
+            color: 'bg-dark hover:bg-accent'
           }
         ];
       case 'BUG_FOUND':
@@ -72,7 +72,7 @@ const TestTaskCard = ({ task, showProject = true, onTaskClick, onUpdateStatus, o
             status: 'IN_TESTING',
             label: 'Re-test',
             icon: TestTube,
-            color: 'bg-yellow-600 hover:bg-yellow-700'
+            color: 'bg-accent hover:bg-primary'
           }
         ];
       case 'TEST_PASSED':
@@ -82,7 +82,7 @@ const TestTaskCard = ({ task, showProject = true, onTaskClick, onUpdateStatus, o
             status: 'IN_TESTING',
             label: 'Re-open',
             icon: X,
-            color: 'bg-gray-600 hover:bg-gray-700'
+            color: 'bg-dark hover:bg-accent'
           }
         ];
       default:
@@ -104,7 +104,7 @@ const TestTaskCard = ({ task, showProject = true, onTaskClick, onUpdateStatus, o
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center space-x-2">
-          <span className="text-xs font-mono text-blue-600">#{task.id}</span>
+          <span className="text-xs font-mono text-dark">#{task.id}</span>
           <Flag className={`w-3 h-3 ${getPriorityColor(task.priority)}`} />
         </div>
         <button className="p-1 hover:bg-gray-100 rounded">
@@ -119,9 +119,9 @@ const TestTaskCard = ({ task, showProject = true, onTaskClick, onUpdateStatus, o
       )}
 
       {task.acceptanceCriteria && (
-        <div className="mb-3 p-2 bg-blue-50 rounded text-sm">
-          <span className="font-medium text-blue-900">Acceptance Criteria:</span>
-          <p className="text-blue-800 mt-1 line-clamp-2">{task.acceptanceCriteria}</p>
+        <div className="mb-3 p-2 bg-gray-100 rounded text-sm">
+          <span className="font-medium text-dark">Acceptance Criteria:</span>
+          <p className="text-gray-700 mt-1 line-clamp-2">{task.acceptanceCriteria}</p>
         </div>
       )}
 

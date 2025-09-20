@@ -18,7 +18,7 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 				}
 
 				const response = await axios.get(
-					"http:
+					"http://localhost:8080/api/user/profile",
 					{
 						headers: {
 							Authorization: `Bearer ${token}`

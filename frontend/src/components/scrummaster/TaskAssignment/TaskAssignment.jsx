@@ -47,7 +47,7 @@ const TaskAssignment = () => {
         try {
             const token = localStorage.getItem('token');
             
-            const projectsResponse = await fetch('/api/projects', {
+            const projectsResponse = await fetch('http://localhost:8080/api/projects', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             
@@ -58,18 +58,12 @@ const TaskAssignment = () => {
                     setSelectedProject(projectsData[0].id);
                 }
             } else {
-                const mockProjects = [
-                    { id: 1, name: 'E-commerce Platform', key: 'ECOM' },
-                    { id: 2, name: 'Mobile Banking App', key: 'MBA' }
-                ];
-                setProjects(mockProjects);
-                if (!selectedProject) {
-                    setSelectedProject(mockProjects[0].id);
-                }
+                console.error('Failed to fetch projects:', projectsResponse.status);
+                setProjects([]);
             }
 
             if (selectedProject) {
-                const sprintsResponse = await fetch(`/api/sprints?projectId=${selectedProject}`, {
+                const sprintsResponse = await fetch(`http://localhost:8080/api/sprints?projectId=${selectedProject}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
@@ -81,18 +75,12 @@ const TaskAssignment = () => {
                         setSelectedSprint(activeSprint.id);
                     }
                 } else {
-                    const mockSprints = [
-                        { id: 1, name: 'Sprint 15', active: true, projectId: selectedProject },
-                        { id: 2, name: 'Sprint 16', active: false, projectId: selectedProject }
-                    ];
-                    setSprints(mockSprints);
-                    if (!selectedSprint) {
-                        setSelectedSprint(mockSprints[0].id);
-                    }
+                    console.error('Failed to fetch sprints:', sprintsResponse.status);
+                    setSprints([]);
                 }
             }
 
-            const membersResponse = await fetch('/api/users?role=DEVELOPER,TESTER', {
+            const membersResponse = await fetch('http://localhost:8080/api/users?role=DEVELOPER,TESTER', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             
@@ -100,45 +88,12 @@ const TaskAssignment = () => {
                 const membersData = await membersResponse.json();
                 setTeamMembers(membersData);
             } else {
-                const mockMembers = [
-                    { 
-                        id: 1, 
-                        fullName: 'Ardit Gashi', 
-                        email: 'ardit@example.com', 
-                        role: 'DEVELOPER',
-                        currentTasks: 3,
-                        maxCapacity: 5
-                    },
-                    { 
-                        id: 2, 
-                        fullName: 'Blerta Krasniqi', 
-                        email: 'blerta@example.com', 
-                        role: 'DEVELOPER',
-                        currentTasks: 2,
-                        maxCapacity: 5
-                    },
-                    { 
-                        id: 3, 
-                        fullName: 'Driton Berisha', 
-                        email: 'driton@example.com', 
-                        role: 'TESTER',
-                        currentTasks: 4,
-                        maxCapacity: 6
-                    },
-                    { 
-                        id: 4, 
-                        fullName: 'Eda Ahmeti', 
-                        email: 'eda@example.com', 
-                        role: 'TESTER',
-                        currentTasks: 1,
-                        maxCapacity: 5
-                    }
-                ];
-                setTeamMembers(mockMembers);
+                console.error('Failed to fetch team members:', membersResponse.status);
+                setTeamMembers([]);
             }
 
             if (selectedSprint) {
-                const tasksResponse = await fetch(`/api/tasks?sprintId=${selectedSprint}`, {
+                const tasksResponse = await fetch(`http://localhost:8080/api/tasks?sprintId=${selectedSprint}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
@@ -146,61 +101,8 @@ const TaskAssignment = () => {
                     const tasksData = await tasksResponse.json();
                     setTasks(tasksData);
                 } else {
-                    const mockTasks = [
-                        {
-                            id: 1,
-                            title: 'Implement user authentication API',
-                            description: 'Create login/register endpoints with JWT',
-                            status: 'TO_DO',
-                            priority: 'HIGH',
-                            estimatedHours: 8,
-                            dueDate: '2025-05-15',
-                            assigneeId: 1,
-                            assignee: { id: 1, fullName: 'Ardit Gashi', role: 'DEVELOPER' },
-                            sprintId: selectedSprint,
-                            projectId: selectedProject
-                        },
-                        {
-                            id: 2,
-                            title: 'Design payment integration UI',
-                            description: 'Create UI components for payment flow',
-                            status: 'IN_PROGRESS',
-                            priority: 'MEDIUM',
-                            estimatedHours: 12,
-                            dueDate: '2025-05-18',
-                            assigneeId: 2,
-                            assignee: { id: 2, fullName: 'Blerta Krasniqi', role: 'DEVELOPER' },
-                            sprintId: selectedSprint,
-                            projectId: selectedProject
-                        },
-                        {
-                            id: 3,
-                            title: 'Test user registration flow',
-                            description: 'Write and execute test cases for user registration',
-                            status: 'READY_FOR_TESTING',
-                            priority: 'HIGH',
-                            estimatedHours: 6,
-                            dueDate: '2025-05-20',
-                            assigneeId: null,
-                            assignee: null,
-                            sprintId: selectedSprint,
-                            projectId: selectedProject
-                        },
-                        {
-                            id: 4,
-                            title: 'Fix mobile responsiveness issues',
-                            description: 'Address layout problems on mobile devices',
-                            status: 'DONE',
-                            priority: 'LOW',
-                            estimatedHours: 4,
-                            dueDate: '2025-05-10',
-                            assigneeId: 1,
-                            assignee: { id: 1, fullName: 'Ardit Gashi', role: 'DEVELOPER' },
-                            sprintId: selectedSprint,
-                            projectId: selectedProject
-                        }
-                    ];
-                    setTasks(mockTasks);
+                    console.error('Failed to fetch tasks:', tasksResponse.status);
+                    setTasks([]);
                 }
             }
         } catch (error) {
@@ -267,7 +169,7 @@ const TaskAssignment = () => {
     const handleCreateTask = async (taskData) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('/api/tasks', {
+            const response = await fetch('http://localhost:8080/api/tasks', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -304,7 +206,7 @@ const TaskAssignment = () => {
     const handleAssignTask = async (taskId, assigneeId) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`/api/tasks/${taskId}/assign`, {
+            const response = await fetch(`http://localhost:8080/api/tasks/${taskId}/assign`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

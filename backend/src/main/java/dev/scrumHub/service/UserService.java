@@ -82,9 +82,8 @@ public class UserService implements UserDetailsService {
                         .mapToLong(task -> !"COMPLETED".equals(task.getStatus()) ? 1 : 0)
                         .sum())
                 .totalProjectsJoined((long) user.getProjects().size())
-                .totalBugsReported((long) user.getReportedBugs().size())
-                .totalBugsAssigned((long) user.getAssignedBugs().size())
-                .totalTestCasesCreated((long) user.getCreatedTestCases().size())
+                .totalBugsReported(0L)
+                .totalBugsAssigned(0L)
                 .memberSince(user.getCreatedAt())
                 .build();
     }

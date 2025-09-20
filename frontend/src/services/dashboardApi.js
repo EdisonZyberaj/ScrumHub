@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http:
+const API_BASE_URL = 'http://localhost:8080/api';
 
 class DashboardApiService {
     constructor() {
@@ -219,6 +219,431 @@ class DashboardApiService {
         } catch (error) {
             console.error('Error fetching recent activity:', error);
             return [];
+        }
+    }
+
+    // Authentication methods
+    async login(email, password) {
+        try {
+            const response = await this.axiosInstance.post('/auth/login', {
+                email,
+                password
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error during login:', error);
+            throw error;
+        }
+    }
+
+    async register(userData) {
+        try {
+            const response = await this.axiosInstance.post('/auth/register', userData);
+            return response.data;
+        } catch (error) {
+            console.error('Error during registration:', error);
+            throw error;
+        }
+    }
+
+    // User management methods
+    async getUsers(params = {}) {
+        try {
+            const response = await this.axiosInstance.get('/users', { params });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            throw error;
+        }
+    }
+
+    async getUserById(userId) {
+        try {
+            const response = await this.axiosInstance.get(`/users/${userId}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching user ${userId}:`, error);
+            throw error;
+        }
+    }
+
+    async updateUserProfile(updateData) {
+        try {
+            const response = await this.axiosInstance.put('/user/profile', updateData);
+            return response.data;
+        } catch (error) {
+            console.error('Error updating user profile:', error);
+            throw error;
+        }
+    }
+
+    async changePassword(passwordData) {
+        try {
+            const response = await this.axiosInstance.post('/user/change-password', passwordData);
+            return response.data;
+        } catch (error) {
+            console.error('Error changing password:', error);
+            throw error;
+        }
+    }
+
+    async getUserStatistics() {
+        try {
+            const response = await this.axiosInstance.get('/user/statistics');
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching user statistics:', error);
+            throw error;
+        }
+    }
+
+    async getUserActivity() {
+        try {
+            const response = await this.axiosInstance.get('/user/activity');
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching user activity:', error);
+            throw error;
+        }
+    }
+
+    // Project management methods
+    async createProject(projectData) {
+        try {
+            const response = await this.axiosInstance.post('/projects', projectData);
+            return response.data;
+        } catch (error) {
+            console.error('Error creating project:', error);
+            throw error;
+        }
+    }
+
+    async updateProject(projectId, updateData) {
+        try {
+            const response = await this.axiosInstance.put(`/projects/${projectId}`, updateData);
+            return response.data;
+        } catch (error) {
+            console.error(`Error updating project ${projectId}:`, error);
+            throw error;
+        }
+    }
+
+    async updateProjectStatus(projectId, status) {
+        try {
+            const response = await this.axiosInstance.put(`/projects/${projectId}/status`, { status });
+            return response.data;
+        } catch (error) {
+            console.error(`Error updating project ${projectId} status:`, error);
+            throw error;
+        }
+    }
+
+    async getProjectMembers(projectId) {
+        try {
+            const response = await this.axiosInstance.get(`/projects/${projectId}/members`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching project ${projectId} members:`, error);
+            throw error;
+        }
+    }
+
+    async addProjectMember(projectId, memberData) {
+        try {
+            const response = await this.axiosInstance.post(`/projects/${projectId}/members`, memberData);
+            return response.data;
+        } catch (error) {
+            console.error(`Error adding member to project ${projectId}:`, error);
+            throw error;
+        }
+    }
+
+    async removeProjectMember(projectId, userId) {
+        try {
+            const response = await this.axiosInstance.delete(`/projects/${projectId}/members/${userId}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error removing member from project ${projectId}:`, error);
+            throw error;
+        }
+    }
+
+    // Sprint management methods
+    async getSprintById(sprintId) {
+        try {
+            const response = await this.axiosInstance.get(`/sprints/${sprintId}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching sprint ${sprintId}:`, error);
+            throw error;
+        }
+    }
+
+    async createSprint(sprintData) {
+        try {
+            const response = await this.axiosInstance.post('/sprints', sprintData);
+            return response.data;
+        } catch (error) {
+            console.error('Error creating sprint:', error);
+            throw error;
+        }
+    }
+
+    async updateSprint(sprintId, updateData) {
+        try {
+            const response = await this.axiosInstance.put(`/sprints/${sprintId}`, updateData);
+            return response.data;
+        } catch (error) {
+            console.error(`Error updating sprint ${sprintId}:`, error);
+            throw error;
+        }
+    }
+
+    async activateSprint(sprintId) {
+        try {
+            const response = await this.axiosInstance.put(`/sprints/${sprintId}`, { active: true });
+            return response.data;
+        } catch (error) {
+            console.error(`Error activating sprint ${sprintId}:`, error);
+            throw error;
+        }
+    }
+
+    async deactivateSprint(sprintId) {
+        try {
+            const response = await this.axiosInstance.put(`/sprints/${sprintId}`, { active: false });
+            return response.data;
+        } catch (error) {
+            console.error(`Error deactivating sprint ${sprintId}:`, error);
+            throw error;
+        }
+    }
+
+    // Task management methods
+    async getTaskById(taskId) {
+        try {
+            const response = await this.axiosInstance.get(`/tasks/${taskId}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching task ${taskId}:`, error);
+            throw error;
+        }
+    }
+
+    async createTask(taskData) {
+        try {
+            const response = await this.axiosInstance.post('/tasks', taskData);
+            return response.data;
+        } catch (error) {
+            console.error('Error creating task:', error);
+            throw error;
+        }
+    }
+
+    async updateTask(taskId, updateData) {
+        try {
+            const response = await this.axiosInstance.put(`/tasks/${taskId}`, updateData);
+            return response.data;
+        } catch (error) {
+            console.error(`Error updating task ${taskId}:`, error);
+            throw error;
+        }
+    }
+
+    async updateTaskStatus(taskId, status) {
+        try {
+            const response = await this.axiosInstance.put(`/tasks/${taskId}/status`, { status });
+            return response.data;
+        } catch (error) {
+            console.error(`Error updating task ${taskId} status:`, error);
+            throw error;
+        }
+    }
+
+    async assignTask(taskId, assigneeId) {
+        try {
+            const response = await this.axiosInstance.put(`/tasks/${taskId}/assign`, { assigneeId });
+            return response.data;
+        } catch (error) {
+            console.error(`Error assigning task ${taskId}:`, error);
+            throw error;
+        }
+    }
+
+    async getMyTasks() {
+        try {
+            const response = await this.axiosInstance.get('/tasks/my-tasks');
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching my tasks:', error);
+            throw error;
+        }
+    }
+
+    // Developer-specific methods
+    async getDeveloperStats() {
+        try {
+            const response = await this.axiosInstance.get('/developer/stats');
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching developer stats:', error);
+            throw error;
+        }
+    }
+
+    // Tester-specific methods
+    async getTesterStats() {
+        try {
+            const response = await this.axiosInstance.get('/tester/stats');
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching tester stats:', error);
+            throw error;
+        }
+    }
+
+    async getTestingBoard(params = {}) {
+        try {
+            const response = await this.axiosInstance.get('/boards/testing', { params });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching testing board:', error);
+            throw error;
+        }
+    }
+
+    // Product Owner-specific methods
+    async getBacklogItems(projectId) {
+        try {
+            const response = await this.axiosInstance.get(`/projects/${projectId}/backlog-items`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching backlog items for project ${projectId}:`, error);
+            throw error;
+        }
+    }
+
+    async getBacklogStats(projectId) {
+        try {
+            const response = await this.axiosInstance.get(`/projects/${projectId}/backlog-stats`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching backlog stats for project ${projectId}:`, error);
+            throw error;
+        }
+    }
+
+    async getEpics(projectId) {
+        try {
+            const response = await this.axiosInstance.get(`/projects/${projectId}/epics`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching epics for project ${projectId}:`, error);
+            throw error;
+        }
+    }
+
+    async getEpicStats(projectId) {
+        try {
+            const response = await this.axiosInstance.get(`/projects/${projectId}/epic-stats`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching epic stats for project ${projectId}:`, error);
+            throw error;
+        }
+    }
+
+    async getReleaseStats(projectId) {
+        try {
+            const response = await this.axiosInstance.get(`/projects/${projectId}/release-stats`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching release stats for project ${projectId}:`, error);
+            throw error;
+        }
+    }
+
+    async getRecentBacklogItems(projectId) {
+        try {
+            const response = await this.axiosInstance.get(`/projects/${projectId}/backlog-items/recent`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching recent backlog items for project ${projectId}:`, error);
+            throw error;
+        }
+    }
+
+    async getRecentEpics(projectId) {
+        try {
+            const response = await this.axiosInstance.get(`/projects/${projectId}/epics/recent`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching recent epics for project ${projectId}:`, error);
+            throw error;
+        }
+    }
+
+    async updateBacklogItem(projectId, itemId, updateData) {
+        try {
+            const response = await this.axiosInstance.put(`/projects/${projectId}/backlog-items/${itemId}`, updateData);
+            return response.data;
+        } catch (error) {
+            console.error(`Error updating backlog item ${itemId}:`, error);
+            throw error;
+        }
+    }
+
+    async deleteBacklogItem(projectId, itemId) {
+        try {
+            const response = await this.axiosInstance.delete(`/projects/${projectId}/backlog-items/${itemId}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error deleting backlog item ${itemId}:`, error);
+            throw error;
+        }
+    }
+
+    async reorderBacklogItems(projectId, reorderData) {
+        try {
+            const response = await this.axiosInstance.post(`/projects/${projectId}/backlog-items/reorder`, reorderData);
+            return response.data;
+        } catch (error) {
+            console.error(`Error reordering backlog items for project ${projectId}:`, error);
+            throw error;
+        }
+    }
+
+    // Board methods
+    async getProjectTasksByStatus(projectId) {
+        try {
+            const response = await this.axiosInstance.get(`/boards/project/${projectId}/tasks-by-status`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching tasks by status for project ${projectId}:`, error);
+            throw error;
+        }
+    }
+
+    // Task Comment methods
+    async getTaskComments(taskId) {
+        try {
+            const response = await this.axiosInstance.get(`/tasks/${taskId}/comments`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching comments for task ${taskId}:`, error);
+            throw error;
+        }
+    }
+
+    async addTaskComment(taskId, content) {
+        try {
+            const response = await this.axiosInstance.post(`/tasks/${taskId}/comments`, {
+                content
+            });
+            return response.data;
+        } catch (error) {
+            console.error(`Error adding comment to task ${taskId}:`, error);
+            throw error;
         }
     }
 }

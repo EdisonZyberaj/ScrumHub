@@ -41,7 +41,7 @@ const ProjectManager = () => {
                     return;
                 }
 
-                const response = await fetch('http:
+                const response = await fetch('http://localhost:8080/api/projects', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -110,7 +110,7 @@ const ProjectManager = () => {
     const handleCreateProject = async (projectData) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http:
+            const response = await fetch('http://localhost:8080/api/projects', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

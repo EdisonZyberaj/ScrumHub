@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft, TestTube, Clock, CheckCircle2, Bug, Filter, Search,
   Plus, MoreHorizontal, Calendar, AlertCircle, Target, LayoutDashboard,
-  User, Tag
+  User, Tag, Edit3
 } from 'lucide-react';
 import {
   DndContext,
@@ -79,7 +79,7 @@ const calculateDaysLeft = dueDate => {
     return diffDays;
 };
 
-const SortableTaskItem = ({ task, onTaskClick, ...props }) => {
+const SortableTaskItem = ({ task, onTaskClick, onEditTask, ...props }) => {
   const {
     attributes,
     listeners,
@@ -107,6 +107,19 @@ const SortableTaskItem = ({ task, onTaskClick, ...props }) => {
         <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
       </div>
 
+      {/* Edit button */}
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onEditTask(task);
+        }}
+        className="absolute top-2 right-10 p-1.5 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors opacity-70 hover:opacity-100"
+        title="Edit Task"
+      >
+        <Edit3 className="w-3 h-3 text-blue-600" />
+      </button>
+
       {/* Click handler for task details - main content area */}
       <div
         onClick={(e) => {
@@ -114,7 +127,7 @@ const SortableTaskItem = ({ task, onTaskClick, ...props }) => {
           e.stopPropagation();
           onTaskClick(task);
         }}
-        className="cursor-pointer hover:shadow-md transition-shadow pr-10"
+        className="cursor-pointer hover:shadow-md transition-shadow pr-16"
       >
       <div className="flex justify-between items-start mb-3">
         <h4 className="font-medium text-gray-800">
@@ -186,7 +199,7 @@ const SortableTaskItem = ({ task, onTaskClick, ...props }) => {
   );
 };
 
-const Column = ({ column, tasks, onTaskClick }) => {
+const Column = ({ column, tasks, onTaskClick, onEditTask }) => {
   return (
     <div className="bg-gray-100 rounded-lg shadow-sm pt-4">
       <div className="px-4 pb-3 flex justify-between items-center">
@@ -204,7 +217,7 @@ const Column = ({ column, tasks, onTaskClick }) => {
           strategy={verticalListSortingStrategy}
         >
           {tasks.map((task) => (
-            <SortableTaskItem key={task.id} task={task} onTaskClick={onTaskClick} />
+            <SortableTaskItem key={task.id} task={task} onTaskClick={onTaskClick} onEditTask={onEditTask} />
           ))}
         </SortableContext>
 
@@ -221,12 +234,33 @@ const Column = ({ column, tasks, onTaskClick }) => {
   );
 };
 
-const TesterBoard = ({ project, sprint, tasks, navigate, onTaskClick, onUpdateStatus, onReportBug }) => {
+const TesterBoard = ({ boardData, projectId, sprintId, navigate, onTaskClick, onUpdateStatus, onReportBug }) => {
+  // Handle null or missing board data
+  if (!boardData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <TestTube className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">No Board Data Available</h2>
+          <p className="text-gray-500 mb-4">Unable to load testing board data</p>
+          <button
+            onClick={() => navigate('/tester')}
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-accent"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const [searchTerm, setSearchTerm] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [columns, setColumns] = useState({});
   const [boardType, setBoardType] = useState('testing');
   const [isLoading, setIsLoading] = useState(true);
+  const [editingTask, setEditingTask] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -250,10 +284,8 @@ const TesterBoard = ({ project, sprint, tasks, navigate, onTaskClick, onUpdateSt
             description: task.description,
             priority: task.priority,
             dueDate: task.dueDate,
-            assignee: task.assignee ? {
-              id: task.assignee.id,
-              name: task.assignee.fullName || task.assignee.username,
-              avatar: null
+            assignee: task.assigneeName ? {
+              name: task.assigneeName
             } : null,
             tags: task.tags || []
           };
@@ -261,17 +293,15 @@ const TesterBoard = ({ project, sprint, tasks, navigate, onTaskClick, onUpdateSt
         });
       };
 
-      const tasksByStatus = {
-        TO_DO: tasks.filter(task => task.status === 'TO_DO'),
-        IN_PROGRESS: tasks.filter(task => task.status === 'IN_PROGRESS'),
-        READY_FOR_TESTING: tasks.filter(task => task.status === 'READY_FOR_TESTING'),
-        IN_TESTING: tasks.filter(task => task.status === 'IN_TESTING'),
-        BUG_FOUND: tasks.filter(task => task.status === 'BUG_FOUND'),
-        TEST_PASSED: tasks.filter(task => task.status === 'TEST_PASSED'),
-        DONE: tasks.filter(task => task.status === 'DONE')
+      // Use boardData.tasksByStatus if available
+      const tasksByStatus = boardData.tasksByStatus || {
+        READY_FOR_TESTING: [],
+        IN_TESTING: [],
+        BUG_FOUND: [],
+        TEST_PASSED: []
       };
 
-      const boardData = {
+      const processedBoardData = {
         scrum: {
           columnOrder: ["todo", "inProgress", "review", "done"],
           columns: {
@@ -327,15 +357,15 @@ const TesterBoard = ({ project, sprint, tasks, navigate, onTaskClick, onUpdateSt
       };
 
       setColumns({
-        scrum: boardData.scrum,
-        testing: boardData.testing,
-        current: boardData.testing
+        scrum: processedBoardData.scrum,
+        testing: processedBoardData.testing,
+        current: processedBoardData.testing
       });
       setIsLoading(false);
     };
 
     processTasksIntoBoard();
-  }, [tasks]);
+  }, [boardData]);
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
@@ -461,6 +491,34 @@ const TesterBoard = ({ project, sprint, tasks, navigate, onTaskClick, onUpdateSt
     return 'TO_DO';
   };
 
+  const handleEditTask = (task) => {
+    setEditingTask(task);
+    setShowEditModal(true);
+  };
+
+  const handleSaveTask = (updatedTask) => {
+    setColumns(prevColumns => {
+      const currentBoard = prevColumns[boardType];
+      const updatedTasks = {
+        ...currentBoard.tasks,
+        [updatedTask.id]: {
+          ...currentBoard.tasks[updatedTask.id],
+          ...updatedTask
+        }
+      };
+
+      return {
+        ...prevColumns,
+        [boardType]: {
+          ...currentBoard,
+          tasks: updatedTasks
+        }
+      };
+    });
+    setShowEditModal(false);
+    setEditingTask(null);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -482,39 +540,18 @@ const TesterBoard = ({ project, sprint, tasks, navigate, onTaskClick, onUpdateSt
           </button>
           <div>
             <div className="flex items-center space-x-3">
-              <h1 className="text-2xl font-bold text-gray-900">{project?.name || 'Project'}</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{boardData?.projectName || 'Project'}</h1>
               <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
                 Testing Board
               </span>
             </div>
             <p className="text-gray-600">
-              {sprint?.name || 'Sprint'} • {tasks.length} tasks
+              {boardData?.sprintName || 'Sprint'} • {Object.values(boardData?.tasksByStatus || {}).flat().length} tasks
             </p>
           </div>
         </div>
       </div>
 
-      {/* Sprint Info */}
-      {sprint && (
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <div className="mb-3">
-            <h3 className="font-medium text-gray-700">Sprint Goal</h3>
-            <p className="text-gray-600">{sprint.goal}</p>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
-            <div
-              className="bg-primary h-2 rounded-full"
-              style={{ width: `${sprint.progress || 0}%` }}
-            />
-          </div>
-          <div className="flex justify-between text-xs text-gray-500">
-            <span>{sprint.progress || 0}% completed</span>
-            <span>
-              {sprint.endDate ? calculateDaysLeft(sprint.endDate) : 0} days remaining
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Board Type Switcher */}
       <div className="bg-white rounded-lg shadow-sm p-4">
@@ -590,11 +627,140 @@ const TesterBoard = ({ project, sprint, tasks, navigate, onTaskClick, onUpdateSt
                 column={column}
                 tasks={tasks}
                 onTaskClick={handleTaskClick}
+                onEditTask={handleEditTask}
               />
             );
           }).filter(Boolean)}
         </div>
       </DndContext>
+
+      {/* Edit Task Modal */}
+      {showEditModal && editingTask && (
+        <TaskEditModal
+          task={editingTask}
+          onSave={handleSaveTask}
+          onCancel={() => {
+            setShowEditModal(false);
+            setEditingTask(null);
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+// Task Edit Modal Component
+const TaskEditModal = ({ task, onSave, onCancel }) => {
+  const [formData, setFormData] = useState({
+    title: task.title || '',
+    description: task.description || '',
+    priority: task.priority || 'MEDIUM',
+    dueDate: task.dueDate || '',
+    tags: task.tags || []
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({
+      ...task,
+      ...formData
+    });
+  };
+
+  const handleTagsChange = (e) => {
+    const tagsArray = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+    setFormData(prev => ({ ...prev, tags: tagsArray }));
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit Task</h3>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Title
+            </label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Description
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              rows="3"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Priority
+            </label>
+            <select
+              value={formData.priority}
+              onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+              <option value="CRITICAL">Critical</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Due Date
+            </label>
+            <input
+              type="date"
+              value={formData.dueDate}
+              onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Tags (comma-separated)
+            </label>
+            <input
+              type="text"
+              value={formData.tags.join(', ')}
+              onChange={handleTagsChange}
+              placeholder="e.g., frontend, bug, urgent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              type="submit"
+              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Save Changes
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

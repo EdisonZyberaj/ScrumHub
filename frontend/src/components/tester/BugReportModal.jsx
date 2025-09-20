@@ -37,7 +37,7 @@ const BugReportModal = ({ showModal, task, onClose, onSubmit }) => {
     try {
       const token = localStorage.getItem('token');
 
-      const response = await fetch(`http:
+      const response = await fetch(`http://localhost:8080/api/tasks/${task.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -47,7 +47,6 @@ const BugReportModal = ({ showModal, task, onClose, onSubmit }) => {
       });
 
       if (response.ok) {
-        console.log('Bug report submitted:', bugReport);
         onSubmit();
       } else {
         throw new Error('Failed to submit bug report');
@@ -83,8 +82,8 @@ const BugReportModal = ({ showModal, task, onClose, onSubmit }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-              <Bug className="w-5 h-5 text-red-600" />
+            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+              <Bug className="w-5 h-5 text-dark" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">Report Bug</h2>
@@ -110,7 +109,7 @@ const BugReportModal = ({ showModal, task, onClose, onSubmit }) => {
               type="text"
               value={bugReport.title}
               onChange={(e) => setBugReport(prev => ({ ...prev, title: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark focus:border-transparent"
               required
             />
           </div>
@@ -123,7 +122,7 @@ const BugReportModal = ({ showModal, task, onClose, onSubmit }) => {
             <select
               value={bugReport.severity}
               onChange={(e) => setBugReport(prev => ({ ...prev, severity: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark focus:border-transparent"
             >
               <option value="LOW">Low - Minor inconvenience</option>
               <option value="MEDIUM">Medium - Affects functionality</option>
@@ -141,7 +140,7 @@ const BugReportModal = ({ showModal, task, onClose, onSubmit }) => {
               value={bugReport.description}
               onChange={(e) => setBugReport(prev => ({ ...prev, description: e.target.value }))}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark focus:border-transparent"
               placeholder="Describe the bug in detail..."
               required
             />
@@ -156,7 +155,7 @@ const BugReportModal = ({ showModal, task, onClose, onSubmit }) => {
               value={bugReport.stepsToReproduce}
               onChange={(e) => setBugReport(prev => ({ ...prev, stepsToReproduce: e.target.value }))}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark focus:border-transparent"
               placeholder="1. Navigate to...&#10;2. Click on...&#10;3. Enter..."
               required
             />
@@ -172,7 +171,7 @@ const BugReportModal = ({ showModal, task, onClose, onSubmit }) => {
                 value={bugReport.expectedBehavior}
                 onChange={(e) => setBugReport(prev => ({ ...prev, expectedBehavior: e.target.value }))}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark focus:border-transparent"
                 placeholder="What should happen..."
               />
             </div>
@@ -184,7 +183,7 @@ const BugReportModal = ({ showModal, task, onClose, onSubmit }) => {
                 value={bugReport.actualBehavior}
                 onChange={(e) => setBugReport(prev => ({ ...prev, actualBehavior: e.target.value }))}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark focus:border-transparent"
                 placeholder="What actually happens..."
               />
             </div>
@@ -199,7 +198,7 @@ const BugReportModal = ({ showModal, task, onClose, onSubmit }) => {
               type="text"
               value={bugReport.environment}
               onChange={(e) => setBugReport(prev => ({ ...prev, environment: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark focus:border-transparent"
               placeholder="Browser, OS, Device..."
             />
           </div>
@@ -214,7 +213,7 @@ const BugReportModal = ({ showModal, task, onClose, onSubmit }) => {
                 <Upload className="mx-auto h-8 w-8 text-gray-400" />
                 <div className="mt-2">
                   <label className="cursor-pointer">
-                    <span className="text-sm text-blue-600 hover:text-blue-500">
+                    <span className="text-sm text-dark hover:text-accent">
                       Upload screenshots or files
                     </span>
                     <input
@@ -241,7 +240,7 @@ const BugReportModal = ({ showModal, task, onClose, onSubmit }) => {
                     <button
                       type="button"
                       onClick={() => removeAttachment(index)}
-                      className="text-red-600 hover:text-red-800"
+                      className="text-dark hover:text-accent"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -275,7 +274,7 @@ const BugReportModal = ({ showModal, task, onClose, onSubmit }) => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-dark text-white rounded-lg hover:bg-accent transition-colors disabled:opacity-50"
             >
               {isSubmitting ? 'Submitting...' : 'Submit Bug Report'}
             </button>

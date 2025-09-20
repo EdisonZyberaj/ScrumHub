@@ -49,7 +49,7 @@ const ProductBacklog = () => {
         try {
             const token = localStorage.getItem('token');
 
-            const projectsResponse = await fetch('http:
+            const projectsResponse = await fetch('http://localhost:8080/api/projects', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -60,24 +60,8 @@ const ProductBacklog = () => {
                     setSelectedProject(projectsData[0].id);
                 }
             } else {
-                const mockProjects = [
-                    {
-                        id: 1,
-                        name: 'E-commerce Platform',
-                        key: 'ECOM',
-                        description: 'Online shopping platform'
-                    },
-                    {
-                        id: 2,
-                        name: 'Mobile Banking App',
-                        key: 'MBA',
-                        description: 'Mobile banking application'
-                    }
-                ];
-                setProjects(mockProjects);
-                if (!selectedProject) {
-                    setSelectedProject(mockProjects[0].id);
-                }
+                console.error('Failed to fetch projects:', projectsResponse.status);
+                setProjects([]);
             }
 
             if (selectedProject) {
@@ -96,7 +80,7 @@ const ProductBacklog = () => {
     const fetchBacklogItems = async (projectId) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http:
+            const response = await fetch(`http://localhost:8080/api/product-owner/projects/${projectId}/backlog`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -104,45 +88,8 @@ const ProductBacklog = () => {
                 const data = await response.json();
                 setBacklogItems(data);
             } else {
-                const mockItems = [
-                    {
-                        id: 1,
-                        title: 'User Authentication System',
-                        description: 'Implement secure user login and registration',
-                        type: 'USER_STORY',
-                        status: 'READY',
-                        priority: 'HIGH',
-                        storyPoints: 8,
-                        backlogPriorityOrder: 1,
-                        epic: { id: 1, title: 'User Management' },
-                        acceptanceCriteria: 'User can login, register, and logout securely'
-                    },
-                    {
-                        id: 2,
-                        title: 'Product Catalog Display',
-                        description: 'Show products with filters and search',
-                        type: 'FEATURE',
-                        status: 'NEW',
-                        priority: 'MEDIUM',
-                        storyPoints: 13,
-                        backlogPriorityOrder: 2,
-                        epic: { id: 2, title: 'Product Management' },
-                        acceptanceCriteria: 'Products displayed with working filters'
-                    },
-                    {
-                        id: 3,
-                        title: 'Fix Shopping Cart Bug',
-                        description: 'Items disappear when refreshing page',
-                        type: 'BUG',
-                        status: 'IN_PROGRESS',
-                        priority: 'CRITICAL',
-                        storyPoints: 3,
-                        backlogPriorityOrder: 3,
-                        epic: null,
-                        acceptanceCriteria: 'Cart items persist on page refresh'
-                    }
-                ];
-                setBacklogItems(mockItems);
+                console.error('Failed to fetch backlog items:', response.status);
+                setBacklogItems([]);
             }
         } catch (error) {
             console.error('Error fetching backlog items:', error);
@@ -153,7 +100,7 @@ const ProductBacklog = () => {
     const fetchEpics = async (projectId) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http:
+            const response = await fetch(`http://localhost:8080/api/product-owner/projects/${projectId}/epics`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -161,23 +108,8 @@ const ProductBacklog = () => {
                 const data = await response.json();
                 setEpics(data);
             } else {
-                const mockEpics = [
-                    {
-                        id: 1,
-                        title: 'User Management',
-                        description: 'Complete user authentication and profile management',
-                        status: 'IN_PROGRESS',
-                        priority: 'HIGH'
-                    },
-                    {
-                        id: 2,
-                        title: 'Product Management',
-                        description: 'Product catalog and inventory management',
-                        status: 'NEW',
-                        priority: 'MEDIUM'
-                    }
-                ];
-                setEpics(mockEpics);
+                console.error('Failed to fetch epics:', response.status);
+                setEpics([]);
             }
         } catch (error) {
             console.error('Error fetching epics:', error);
@@ -188,7 +120,7 @@ const ProductBacklog = () => {
     const fetchStatistics = async (projectId) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http:
+            const response = await fetch(`http://localhost:8080/api/product-owner/projects/${projectId}/backlog/statistics`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -196,13 +128,8 @@ const ProductBacklog = () => {
                 const data = await response.json();
                 setStatistics(data);
             } else {
-                setStatistics({
-                    totalItems: 15,
-                    totalStoryPoints: 89,
-                    readyItems: 5,
-                    newItems: 8,
-                    completedItems: 2
-                });
+                console.error('Failed to fetch statistics:', response.status);
+                setStatistics({});
             }
         } catch (error) {
             console.error('Error fetching statistics:', error);
@@ -213,7 +140,7 @@ const ProductBacklog = () => {
     const handleCreateItem = async (itemData) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http:
+            const response = await fetch(`http://localhost:8080/api/product-owner/projects/${selectedProject}/backlog`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -227,10 +154,13 @@ const ProductBacklog = () => {
                 setBacklogItems(prev => [newItem, ...prev]);
                 await fetchStatistics(selectedProject);
             } else {
-                throw new Error('Failed to create backlog item');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Failed to create backlog item (${response.status})`);
             }
         } catch (error) {
             console.error('Error creating backlog item:', error);
+
+
             throw error;
         }
     };
@@ -238,7 +168,7 @@ const ProductBacklog = () => {
     const handleEditItem = async (itemId, itemData) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http:
+            const response = await fetch(`http://localhost:8080/api/product-owner/backlog/${itemId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -254,10 +184,13 @@ const ProductBacklog = () => {
                 ));
                 await fetchStatistics(selectedProject);
             } else {
-                throw new Error('Failed to update backlog item');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Failed to update backlog item (${response.status})`);
             }
         } catch (error) {
             console.error('Error updating backlog item:', error);
+
+
             throw error;
         }
     };
@@ -269,7 +202,7 @@ const ProductBacklog = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http:
+            const response = await fetch(`http://localhost:8080/api/product-owner/backlog/${itemId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -278,11 +211,14 @@ const ProductBacklog = () => {
                 setBacklogItems(prev => prev.filter(item => item.id !== itemId));
                 await fetchStatistics(selectedProject);
             } else {
-                throw new Error('Failed to delete backlog item');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Failed to delete backlog item (${response.status})`);
             }
         } catch (error) {
             console.error('Error deleting backlog item:', error);
-            alert('Failed to delete backlog item');
+
+
+            alert('Failed to delete backlog item: ' + error.message);
         }
     };
 
@@ -298,7 +234,7 @@ const ProductBacklog = () => {
             const token = localStorage.getItem('token');
             const itemIdsInOrder = reorderedItems.map(item => item.id);
 
-            const response = await fetch(`http:
+            const response = await fetch(`http://localhost:8080/api/product-owner/projects/${selectedProject}/backlog/reorder`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -399,32 +335,6 @@ const ProductBacklog = () => {
                     </div>
                 </div>
 
-                {/* Quick Navigation */}
-                <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-                    <div className="flex flex-wrap gap-3">
-                        <button
-                            onClick={() => navigate('/productowner')}
-                            className="flex items-center px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition"
-                        >
-                            <BarChart3 className="h-4 w-4 mr-2" />
-                            Dashboard
-                        </button>
-                        <button
-                            onClick={() => navigate('/productowner/epics')}
-                            className="flex items-center px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition"
-                        >
-                            <Layers className="h-4 w-4 mr-2" />
-                            Epics
-                        </button>
-                        <button
-                            onClick={() => navigate('/productowner/releases')}
-                            className="flex items-center px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition"
-                        >
-                            <Calendar className="h-4 w-4 mr-2" />
-                            Releases
-                        </button>
-                    </div>
-                </div>
 
                 {/* Project Selector */}
                 <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
@@ -633,7 +543,7 @@ const ProductBacklog = () => {
                     onSubmit={async (epicData) => {
                         try {
                             const token = localStorage.getItem('token');
-                            const response = await fetch(`http:
+                            const response = await fetch(`http://localhost:8080/api/product-owner/projects/${selectedProject}/epics`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',

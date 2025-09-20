@@ -1,0 +1,329 @@
+=====================================================================
+                    APLIKACIONI SCRUMHUB - DOKUMENTIMI I PLOTË
+=====================================================================
+
+4.1. KRIJIMI DHE STRUKTURA E APLIKACIONIT
+==========================================
+
+ScrumHub është një aplikacion web për menaxhimin e projekteve Agile dhe Scrum, i ndërtuar me arkitekturë moderne full-stack:
+
+STRUKTURA E PËRGJITHSHME:
+- Frontend: React.js 19.1.0 me Vite si build tool
+- Backend: Spring Boot 3.4.5 me Java 21
+- Databaza: PostgreSQL
+- Autentifikimi: JWT (JSON Web Tokens)
+- Styling: TailwindCSS
+
+FRONTEND STRUKTURA:
+├── src/
+│   ├── components/
+│   │   ├── common/ (Komponentë të përbashkët)
+│   │   ├── dashboard/ (Dashboard komponentë)
+│   │   ├── developer/ (Komponentë për Developer)
+│   │   ├── productowner/ (Komponentë për Product Owner)
+│   │   ├── scrummaster/ (Komponentë për Scrum Master)
+│   │   ├── tester/ (Komponentë për Software Tester)
+│   │   └── shared/ (Komponentë të ndarë)
+│   ├── pages/ (Faqet kryesore)
+│   ├── services/ (API shërbimet)
+│   └── main.jsx (Entry point)
+
+BACKEND STRUKTURA:
+├── src/main/java/dev/scrumHub/
+│   ├── controller/ (REST API Controllers)
+│   ├── service/ (Business Logic Services)
+│   ├── repository/ (Data Access Layer)
+│   ├── model/ (Entity Models)
+│   ├── dto/ (Data Transfer Objects)
+│   ├── config/ (Konfigurimi i aplikacionit)
+│   └── security/ (Security & JWT implementimi)
+
+TEKNOLOGJITË E PËRDORURA:
+
+Frontend Dependencies:
+- React Router DOM për navigim
+- Axios për HTTP requests
+- Lucide React për ikona
+- Recharts për grafikë dhe analiza
+- @dnd-kit për drag-and-drop funksionalitet
+- React Icons për ikona shtesë
+
+Backend Dependencies:
+- Spring Boot Starter Web
+- Spring Boot Starter Data JPA
+- Spring Boot Starter Security
+- PostgreSQL Driver
+- JWT Libraries (jjwt-api, jjwt-impl, jjwt-jackson)
+- Lombok për kod simplifikimi
+
+4.2. DATABAZA
+=============
+
+STRUKTURA E DATABAZËS:
+
+1. TABELA USERS (Përdoruesit)
+   - id: Long (Primary Key)
+   - username: String (nullable = false)
+   - email: String (unique, nullable = false)
+   - password: String (encrypted, nullable = false)
+   - fullName: String (nullable = false)
+   - role: UserRole Enum (GUEST, DEVELOPER, TESTER, SCRUM_MASTER, PRODUCT_OWNER)
+   - active: Boolean (default = true)
+   - createdAt: LocalDateTime
+   - updatedAt: LocalDateTime
+
+2. TABELA PROJECTS (Projektet)
+   - id: Long (Primary Key)
+   - name: String (unique, nullable = false)
+   - description: String (maksimumi 500 karaktere)
+   - key: String (nullable = false)
+   - startDate: LocalDateTime
+   - endDate: LocalDateTime
+   - active: Boolean (default = true)
+   - status: ProjectStatus Enum (ACTIVE, COMPLETED, ON_HOLD, PLANNED)
+   - createdAt: LocalDateTime
+   - updatedAt: LocalDateTime
+
+3. TABELA TASKS (Detyrat)
+   - id: Long (Primary Key)
+   - title: String (nullable = false)
+   - description: String (maksimumi 1000 karaktere)
+   - acceptanceCriteria: String (maksimumi 1000 karaktere)
+   - type: TaskType Enum (TASK, USER_STORY, BUG, FEATURE, IMPROVEMENT, DOCUMENTATION)
+   - priority: TaskPriority Enum (LOW, MEDIUM, HIGH, CRITICAL)
+   - status: TaskStatus Enum (TO_DO, IN_PROGRESS, READY_FOR_TESTING, IN_TESTING, BUG_FOUND, TEST_PASSED, DONE)
+   - estimatedHours: Integer
+   - loggedHours: Integer (default = 0)
+   - dueDate: LocalDateTime
+   - sprint_id: Long (Foreign Key)
+   - project_id: Long (Foreign Key, nullable = false)
+   - assignee_id: Long (Foreign Key)
+   - created_by: Long (Foreign Key, nullable = false)
+   - createdAt: LocalDateTime
+   - updatedAt: LocalDateTime
+
+4. TABELA SPRINTS
+   - id: Long (Primary Key)
+   - name: String
+   - startDate: LocalDateTime
+   - endDate: LocalDateTime
+   - goal: String
+   - status: SprintStatus Enum
+   - project_id: Long (Foreign Key)
+
+5. TABELA EPICS
+   - id: Long (Primary Key)
+   - title: String
+   - description: String
+   - project_id: Long (Foreign Key)
+
+6. TABELA PRODUCT_BACKLOG_ITEMS
+   - id: Long (Primary Key)
+   - title: String
+   - description: String
+   - priority: Priority Enum
+   - project_id: Long (Foreign Key)
+
+7. TABELA TEST_CASES
+   - id: Long (Primary Key)
+   - title: String
+   - description: String
+   - expectedResult: String
+   - actualResult: String
+   - status: TestStatus Enum
+   - task_id: Long (Foreign Key)
+   - createdBy_id: Long (Foreign Key)
+
+8. TABELA BUG_REPORTS
+   - id: Long (Primary Key)
+   - title: String
+   - description: String
+   - severity: BugSeverity Enum
+   - status: BugStatus Enum
+   - task_id: Long (Foreign Key)
+   - reportedBy_id: Long (Foreign Key)
+   - assignedTo_id: Long (Foreign Key)
+
+9. TABELA TASK_COMMENTS
+   - id: Long (Primary Key)
+   - content: String
+   - task_id: Long (Foreign Key)
+   - user_id: Long (Foreign Key)
+   - createdAt: LocalDateTime
+
+10. TABELA USER_PROJECTS (Many-to-Many relationship)
+    - user_id: Long (Foreign Key)
+    - project_id: Long (Foreign Key)
+    - role: String
+    - joinedAt: LocalDateTime
+
+RELACIONET E DATABAZËS:
+- User ↔ Project: Many-to-Many (përmes USER_PROJECTS)
+- Project → Tasks: One-to-Many
+- Project → Sprints: One-to-Many
+- Project → Epics: One-to-Many
+- Sprint → Tasks: One-to-Many
+- User → Tasks (assignee): One-to-Many
+- User → Tasks (creator): One-to-Many
+- Task → TestCases: One-to-Many
+- Task → BugReports: One-to-Many
+- Task → Comments: One-to-Many
+
+4.3. AUTENTIFIKIMI
+==================
+
+IMPLEMENTIMI I SIGURISË:
+
+1. JWT (JSON Web Tokens) AUTENTIFIKIMI:
+   - Përdorimi i Spring Security për sigurinë e aplikacionit
+   - JWT tokens për autentifikim stateless
+   - BCrypt encryption për passworde
+
+2. SECURITY CONFIGURATION:
+   - CORS konfigurimi për frontend integration
+   - Stateless session management
+   - JWT filter për validimin e token-ave
+   - Role-based access control
+
+3. JWT SERVICE FUNKSIONALITETET:
+   - Token generation me user details
+   - Token validation dhe expiration check
+   - Claims extraction (username, authorities)
+   - Secure key generation me HMAC SHA256
+
+4. PASSWORD ENCODING:
+   - BCryptPasswordEncoder për hash-imin e passwordeve
+   - Salt automatik për çdo password
+
+5. CORS KONFIGURIMI:
+   - Allowed origins: localhost:5173, 5174, 5176
+   - Allowed methods: GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH
+   - Credentials support për cookie-based authentication
+
+6. AUTHENTICATION FLOW:
+   a) User dërgon login credentials
+   b) Backend validon credentials dhe gjeneron JWT
+   c) JWT kthehet në client dhe ruhet lokalisht
+   d) Çdo request i ardhshëm përmban JWT në Authorization header
+   e) Backend validon JWT dhe lejon/refuzon aksesit
+
+4.4. IMPLEMENTIMI I CHAT-BOT
+============================
+
+NOTA: Bazuar në analizën e kodit, aktualisht nuk është zbatuar një chat-bot i plotë në aplikacion.
+Megjithatë, arkitektura e aplikacionit lejon implementimin e një chat-bot në të ardhmen përmes:
+
+MUNDËSITË PËR CHAT-BOT:
+1. Integration me Task Management System
+2. Automated Sprint Planning assistance
+3. Bug Report notifications
+4. Project status updates
+5. AI-powered development suggestions
+
+IMPLEMENTIM I SUGJERUAR:
+- WebSocket connection për real-time communication
+- Integration me external AI services (OpenAI, Dialogflow)
+- Context-aware responses bazuar në project data
+- Role-based chat responses për çdo user type
+
+4.5. PËRSHKRIM I FUNKSIONALITETEVE DHE ROLEVE
+=============================================
+
+ROLES DHE PËRGJEGJËSITË:
+
+1. PRODUCT OWNER:
+   - Menaxhon Product Backlog
+   - Krijon dhe edoiton Backlog Items
+   - Krijon dhe menaxhon Epics
+   - Prioritizon features dhe requirements
+   - Komponentë kryesorë: ProductBacklog.jsx, ProductOwnerDashboard.jsx
+
+2. SCRUM MASTER:
+   - Menaxhon projekte (ProjectManager.jsx)
+   - Planifikon Sprints (SprintPlanning.jsx)
+   - Asignon detyra (TaskAssignment.jsx)
+   - Monitoron project progress
+   - Krijon dhe konfiguron projects
+
+3. DEVELOPER:
+   - Shikon dhe menaxhon assigned tasks
+   - Update task status dhe progress
+   - Log work hours
+   - Workload calendar për planning
+   - Komponentë: DeveloperBoard.jsx, TasksList.jsx, WorkloadCalendar.jsx
+
+4. SOFTWARE TESTER:
+   - Krijon dhe menaxhon Test Cases
+   - Raporton Bug Reports
+   - Test task execution
+   - Quality assurance monitoring
+   - Komponentë: TesterBoard.jsx, BugReports.jsx, TestCases.jsx
+
+5. GUEST:
+   - Akses i kufizuar vetëm për shikimin e projekteve
+   - Nuk mund të modifikojë të dhëna
+
+FUNKSIONALITETET KRYESORE:
+
+1. PROJECT MANAGEMENT:
+   - Krijimi dhe konfigurimi i projekteve
+   - Project dashboard me statistika
+   - Project settings dhe member management
+
+2. SPRINT PLANNING:
+   - Sprint creation dhe management
+   - Sprint backlog planning
+   - Burndown charts për monitoring
+
+3. TASK MANAGEMENT:
+   - Task creation, assignment, dhe tracking
+   - Task status workflow: TO_DO → IN_PROGRESS → READY_FOR_TESTING → IN_TESTING → DONE
+   - Task prioritization dhe estimation
+
+4. TESTING WORKFLOW:
+   - Test case creation dhe execution
+   - Bug reporting dhe tracking
+   - Quality assurance metrics
+
+5. REPORTING DHE ANALYTICS:
+   - Dashboard charts për project metrics
+   - User performance statistics
+   - Sprint progress tracking
+   - Burndown charts
+
+6. USER MANAGEMENT:
+   - Role-based access control
+   - User profile management
+   - Team collaboration tools
+
+WORKFLOW I PËRGJITHSHËM:
+1. Product Owner krijon User Stories në Product Backlog
+2. Scrum Master planifikon Sprint dhe asignon tasks
+3. Developers marrin tasks dhe i zhvillojnë
+4. Tasks kalohen në testing phase
+5. Testers ekzekutojnë test cases dhe raportojnë bugs
+6. Bugs fiksohen dhe tasks kompletiohen
+7. Sprint reviews dhe retrospectives
+
+INTEGRATION POINTS:
+- Real-time notifications për task updates
+- Email notifications për critical events
+- Dashboard analytics për performance tracking
+- Export functionality për reports
+
+=====================================================================
+                            PËRFUNDIM
+=====================================================================
+
+ScrumHub është një aplikacion i plotë për menaxhimin e projekteve Agile që implementon best practices të Scrum methodology. Me arkitekturën e tij moderne dhe role-based access control, aplikacioni mbështet efektivisht ekipet e zhvillimit në organizimin dhe ekzekutimin e projekteve të tyre software.
+
+Aplikacioni ofron:
+✓ Menaxhim të plotë të projekteve Agile
+✓ Role-based collaboration
+✓ Real-time task tracking
+✓ Quality assurance workflow
+✓ Comprehensive reporting
+✓ Secure authentication system
+
+Dokumentacioni i krijuar më: 19 Dhjetor 2025
+Versioni i aplikacionit: 0.0.1-SNAPSHOT

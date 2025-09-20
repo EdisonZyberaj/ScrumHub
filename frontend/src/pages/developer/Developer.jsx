@@ -100,10 +100,10 @@ const Developer = () => {
       const token = localStorage.getItem('token');
 
       const [tasksResponse, statsResponse] = await Promise.all([
-        fetch('http:
+        fetch('http://localhost:8080/api/tasks/my-tasks', {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch('http:
+        fetch('http://localhost:8080/api/developer/stats', {
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
@@ -129,7 +129,7 @@ const Developer = () => {
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http:
+      const response = await fetch(`http://localhost:8080/api/projects`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -145,7 +145,7 @@ const Developer = () => {
   const fetchProjectData = async (projectId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http:
+      const response = await fetch(`http://localhost:8080/api/projects/${projectId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -161,7 +161,7 @@ const Developer = () => {
   const fetchSprintData = async (sprintId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http:
+      const response = await fetch(`http://localhost:8080/api/sprints/${sprintId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -189,7 +189,7 @@ const Developer = () => {
     try {
       const token = localStorage.getItem('token');
 
-      let url = `http:
+      let url = `http://localhost:8080/api/tasks?developerId=${user.id}`;
       if (projectId) {
         url += `&projectId=${projectId}`;
       }
@@ -202,7 +202,7 @@ const Developer = () => {
         const tasksData = await response.json();
         setTasks(tasksData);
       } else {
-        const fallbackResponse = await fetch(`http:
+        const fallbackResponse = await fetch(`http://localhost:8080/api/tasks?developerId=${user.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (fallbackResponse.ok) {
@@ -258,7 +258,7 @@ const Developer = () => {
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http:
+      const response = await fetch(`http://localhost:8080/api/tasks/${taskId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

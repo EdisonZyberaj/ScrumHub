@@ -18,7 +18,6 @@ public class UserStatsDto {
     private Long totalProjectsJoined;
     private Long totalBugsReported;
     private Long totalBugsAssigned;
-    private Long totalTestCasesCreated;
     private LocalDateTime lastLogin;
     private LocalDateTime memberSince;
 }

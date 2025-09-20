@@ -11,10 +11,10 @@ import dev.scrumHub.model.User;
 import dev.scrumHub.model.UserProject;
 import dev.scrumHub.model.UserProjectId;
 import dev.scrumHub.repository.ProjectRepository;
+import dev.scrumHub.repository.UserProjectRepository;
 import dev.scrumHub.repository.SprintRepository;
 import dev.scrumHub.repository.TaskRepository;
 import dev.scrumHub.repository.UserRepository;
-import dev.scrumHub.repository.UserProjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,7 +59,7 @@ public class ProjectService {
     }
 
     public List<ProjectResponseDto> getActiveProjectsForUser(Long userId) {
-        List<UserProject> userProjects = userProjectRepository.findByUserId(userId);
+        List<UserProject> userProjects = userProjectRepository.findActiveByUserId(userId);
         return userProjects.stream()
                 .map(UserProject::getProject)
                 .filter(Project::isActive)
@@ -323,29 +323,29 @@ public class ProjectService {
     public void addProjectMember(Long projectId, Long userId, String roleInProject) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found with id: " + projectId));
-        
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-        
+
         UserProjectId userProjectId = new UserProjectId(userId, projectId);
         if (userProjectRepository.existsById(userProjectId)) {
             throw new RuntimeException("User is already a member of this project");
         }
-        
+
         UserProject.ProjectRole role;
         try {
             role = UserProject.ProjectRole.valueOf(roleInProject.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Invalid role: " + roleInProject);
         }
-        
+
         UserProject userProject = UserProject.builder()
                 .id(userProjectId)
                 .user(user)
                 .project(project)
                 .roleInProject(role)
                 .build();
-        
+
         userProjectRepository.save(userProject);
     }
     
@@ -353,15 +353,15 @@ public class ProjectService {
     public void removeProjectMember(Long projectId, Long userId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found with id: " + projectId));
-        
+
         UserProjectId userProjectId = new UserProjectId(userId, projectId);
         UserProject userProject = userProjectRepository.findById(userProjectId)
                 .orElseThrow(() -> new RuntimeException("User is not a member of this project"));
-        
+
         if (userProject.getRoleInProject() == UserProject.ProjectRole.SCRUM_MASTER) {
             throw new RuntimeException("Cannot remove Scrum Master from project");
         }
-        
+
         userProjectRepository.deleteById(userProjectId);
     }
 }

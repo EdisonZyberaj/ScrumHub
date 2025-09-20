@@ -33,7 +33,7 @@ const ProjectSettingsModal = ({ isOpen, onClose, project, onUpdate }) => {
         try {
             setIsLoading(true);
             const token = localStorage.getItem('token');
-            const response = await fetch(`http:
+            const response = await fetch(`http://localhost:8080/api/projects/${project.id}/members`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -58,7 +58,7 @@ const ProjectSettingsModal = ({ isOpen, onClose, project, onUpdate }) => {
     const fetchAvailableUsers = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http:
+            const response = await fetch('http://localhost:8080/api/users', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -83,7 +83,7 @@ const ProjectSettingsModal = ({ isOpen, onClose, project, onUpdate }) => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http:
+            const response = await fetch(`http://localhost:8080/api/projects/${project.id}/members`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -110,7 +110,7 @@ const ProjectSettingsModal = ({ isOpen, onClose, project, onUpdate }) => {
     const handleRemoveMember = async (userId) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http:
+            const response = await fetch(`http://localhost:8080/api/projects/${project.id}/members/${userId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -131,7 +131,7 @@ const ProjectSettingsModal = ({ isOpen, onClose, project, onUpdate }) => {
     const handleStatusChange = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http:
+            const response = await fetch(`http://localhost:8080/api/projects/${project.id}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,

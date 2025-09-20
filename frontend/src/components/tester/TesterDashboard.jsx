@@ -1,5 +1,5 @@
 import React from 'react';
-import { TestTube, CheckCircle2, Bug, AlertTriangle, Play, Kanban, Clock } from 'lucide-react';
+import { TestTube, CheckCircle2, Bug, AlertTriangle, Play, Kanban, Clock, BarChart3 } from 'lucide-react';
 import TestTaskCard from './TestTaskCard';
 
 const TesterDashboard = ({ stats, projects, tasks, onTaskClick, onUpdateStatus, onReportBug, navigate }) => {
@@ -11,10 +11,10 @@ const TesterDashboard = ({ stats, projects, tasks, onTaskClick, onUpdateStatus, 
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Ready for Testing</p>
-              <p className="text-3xl font-bold text-blue-600">{stats.readyForTesting || 0}</p>
+              <p className="text-3xl font-bold text-dark">{stats.readyForTesting || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <TestTube className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+              <TestTube className="w-6 h-6 text-dark" />
             </div>
           </div>
         </div>
@@ -23,10 +23,10 @@ const TesterDashboard = ({ stats, projects, tasks, onTaskClick, onUpdateStatus, 
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">In Testing</p>
-              <p className="text-3xl font-bold text-yellow-600">{stats.inTesting || 0}</p>
+              <p className="text-3xl font-bold text-accent">{stats.inTesting || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <Clock className="w-6 h-6 text-yellow-600" />
+            <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+              <Clock className="w-6 h-6 text-accent" />
             </div>
           </div>
         </div>
@@ -35,10 +35,10 @@ const TesterDashboard = ({ stats, projects, tasks, onTaskClick, onUpdateStatus, 
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Test Passed</p>
-              <p className="text-3xl font-bold text-green-600">{stats.testPassed || 0}</p>
+              <p className="text-3xl font-bold text-primary">{stats.testPassed || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <CheckCircle2 className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <CheckCircle2 className="w-6 h-6 text-primary" />
             </div>
           </div>
         </div>
@@ -47,10 +47,10 @@ const TesterDashboard = ({ stats, projects, tasks, onTaskClick, onUpdateStatus, 
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Bugs Found</p>
-              <p className="text-3xl font-bold text-red-600">{stats.bugFound || 0}</p>
+              <p className="text-3xl font-bold text-dark">{stats.bugFound || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-              <Bug className="w-6 h-6 text-red-600" />
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+              <Bug className="w-6 h-6 text-dark" />
             </div>
           </div>
         </div>
@@ -59,29 +59,21 @@ const TesterDashboard = ({ stats, projects, tasks, onTaskClick, onUpdateStatus, 
       {/* Quick Actions */}
       <div className="bg-white rounded-xl shadow-sm p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
             onClick={() => navigate('/tester/tasks')}
-            className="flex items-center justify-center space-x-2 p-4 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+            className="flex items-center justify-center space-x-2 p-4 bg-gray-100 text-dark rounded-lg hover:bg-gray-200 transition-colors"
           >
             <TestTube className="w-5 h-5" />
             <span>View Tasks to Test</span>
           </button>
 
           <button
-            onClick={() => navigate('/tester/bugs')}
-            className="flex items-center justify-center space-x-2 p-4 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+            onClick={() => navigate('/tester')}
+            className="flex items-center justify-center space-x-2 p-4 bg-gray-100 text-dark rounded-lg hover:bg-gray-200 transition-colors"
           >
-            <Bug className="w-5 h-5" />
-            <span>Bug Reports</span>
-          </button>
-
-          <button
-            onClick={() => navigate('/tester/testcases')}
-            className="flex items-center justify-center space-x-2 p-4 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
-          >
-            <CheckCircle2 className="w-5 h-5" />
-            <span>Test Cases</span>
+            <BarChart3 className="w-5 h-5" />
+            <span>Dashboard</span>
           </button>
         </div>
       </div>

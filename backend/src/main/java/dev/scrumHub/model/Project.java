@@ -40,9 +40,6 @@ public class Project {
     private LocalDateTime endDate;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<UserProject> projectMemberships = new HashSet<>();
-
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Sprint> sprints = new HashSet<>();
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -60,8 +57,19 @@ public class Project {
     @Column(nullable = false)
     private boolean active = true;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private ProjectStatus status = ProjectStatus.ACTIVE;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<UserProject> projectMemberships = new HashSet<>();
+
     @ManyToMany(mappedBy = "projects")
     private Set<User> users = new HashSet<>();
+
+    public enum ProjectStatus {
+        ACTIVE, COMPLETED, ON_HOLD, PLANNED
+    }
 
     @CreationTimestamp
     @Column(updatable = false)

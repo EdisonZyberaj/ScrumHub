@@ -9,16 +9,23 @@ lerna-debug.log*
 
 API_DOCUMENTATION.md
 
+# Dependencies
 node_modules
 dist
 dist-ssr
+build
+
+# Environment variables
+.env
+.env.*
+!.env.example
 *.local
 .claude
-
 
 # Test Files
 **/__tests__/
 **/test/
+**/tests/
 **/*.test.js
 **/*.test.jsx
 **/*.test.ts
@@ -27,8 +34,13 @@ dist-ssr
 **/*.spec.jsx
 **/*.spec.ts
 **/*.spec.tsx
+jest.config.*
 cypress/
+cypress.config.*
 coverage/
+test-results/
+playwright-report/
+.nyc_output/
 
 # Editor directories and files
 .vscode/*
@@ -41,3 +53,12 @@ coverage/
 *.sln
 *.sw?
 debug_test.html
+
+# OS generated files
+Thumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db

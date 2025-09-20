@@ -26,36 +26,15 @@ function ProjectDescription({ projectId }) {
 				}
 
 				try {
-					const mockProject = {
-						id: projectId || 1,
-						name: "ScrumHub: Project Management Tool",
-						description:
-							"A comprehensive Scrum project management application designed to streamline agile workflows and enhance team collaboration.",
-						startDate: "2025-01-10",
-						endDate: "2025-07-30",
-						status: "In Progress",
-						progress: 68,
-						teamMembers: [
-							{ id: 1, name: "John Smith", role: "Scrum Master" },
-							{ id: 2, name: "Alex Wong", role: "Developer" },
-							{ id: 3, name: "Emily Johnson", role: "Designer" },
-							{ id: 4, name: "Michael Brown", role: "Developer" },
-							{ id: 5, name: "Sarah Davis", role: "Tester" }
-						],
-						taskStats: {
-							completed: 24,
-							inProgress: 12,
-							todo: 10,
-							total: 46
-						},
-						currentSprint: {
-							name: "Sprint 4",
-							endDate: "2025-05-19",
-							progress: 45
-						}
-					};
+					const response = await axios.get(`http://localhost:8080/api/projects/${projectId}`, {
+						headers: { 'Authorization': `Bearer ${token}` }
+					});
 
-					setProject(mockProject);
+					if (response.data) {
+						setProject(response.data);
+					} else {
+						setError("Project not found");
+					}
 					setIsLoading(false);
 				} catch (err) {
 					console.error("Error fetching project data:", err);

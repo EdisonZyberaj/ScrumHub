@@ -80,7 +80,7 @@ function Register() {
 			});
 
 			const response = await axios.post(
-				"http:
+				"http://localhost:8080/api/auth/register",
 				{
 					firstName: formData.name,
 					lastName: formData.lastName,
@@ -233,6 +233,7 @@ function Register() {
 									<option value="DEVELOPER">Developer</option>
 									<option value="TESTER">Tester</option>
 									<option value="SCRUM_MASTER">Scrum Master</option>
+									<option value="PRODUCT_OWNER">Product Owner</option>
 								</select>
 							</div>
 

@@ -1,0 +1,24 @@
+# Database Configuration
+spring.datasource.url=jdbc:postgresql://localhost:5433/scrumHub
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# JPA/Hibernate Configuration
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+# Server Configuration
+server.port=8080
+
+# JWT Configuration
+# Generate a secure Base64 encoded key (at least 64 characters)
+app.jwt.secret=your_secure_base64_jwt_secret_key_here
+app.jwt.expiration=86400000
+
+# Logging Configuration
+logging.level.org.springframework.web=INFO
+logging.level.dev.scrumHub=DEBUG
+logging.level.org.springframework.security=DEBUG
